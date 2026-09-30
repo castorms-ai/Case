@@ -687,7 +687,6 @@
     opacity: 0.85;
   }
 
-  /* ==== АПГРЕЙДЕР ==== */
   .upgrader-overlay {
     position: fixed;
     inset: 0;
@@ -1017,7 +1016,7 @@
 
     <div class="upgrader-chance" id="upgraderResult"></div>
 
-    <button class="upgrader-spin-btn" id="upgraderSpinBtn">Крутить</button>
+    <button class="upgrader-spin-btn" id="upgraderSpinBtn" disabled>Крутить</button>
     <button class="upgrader-close-btn" id="upgraderCloseBtn">Закрыть</button>
   </div>
  </div>
@@ -1118,7 +1117,6 @@ let totalOpened = 0;
 let totalSpentDiamonds = 0;
 let totalSpentCoins = 0;
 
-// Апгрейдер
 let upgraderYourItem = null;
 let upgraderTargetItem = null;
 let upgraderSpinning = false;
@@ -1448,7 +1446,6 @@ function startIncome() {
   }, 60 * 1000);
 }
 
-// ==== СОХРАНЕНИЕ ====
 function saveAccount() {
   if (!playerNick) return;
   const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
@@ -1488,7 +1485,6 @@ function loadAccount(nick, password) {
   return 'ok';
 }
 
-// ==== ОТКРЫТИЕ КЕЙСА ====
 let currentPrizeList = PRIVILEGES;
 let currentCaseType = 'privileges';
 
@@ -1616,7 +1612,7 @@ function startSpin(currency) {
 function closeModal() {
   modalOverlay.classList.remove('active');
 }
-// ==== АПГРЕЙДЕР ====
+  // ==== АПГРЕЙДЕР ====
 function openUpgrader() {
   upgraderYourItem = null;
   upgraderTargetItem = null;
@@ -1646,7 +1642,6 @@ function renderUpgraderLists() {
     const div = document.createElement('div');
     div.className = 'upgrader-item';
 
-    // Нельзя ставить привилегию, если она единственная в инвентаре
     let disabled = false;
     if (item.type === 'privilege' && privilegeInventory.length === 1) {
       disabled = true;
@@ -2003,3 +1998,7 @@ updateTitle();
 renderInventory();
 renderLeaders();
 startIncome();
+</script>
+
+</body>
+</html>

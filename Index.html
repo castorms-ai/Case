@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Кейсы</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: url('https://avatars.mds.yandex.net/i?id=8c6b6affcbc4c38379f4511c440605f7ca2082f1-4599578-images-thumbs&n=13') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 15px 15px 85px 15px;
+  }
+
+  .nickname-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    padding: 20px;
+  }
+  .nickname-overlay.hidden { display: none; }
+  .nickname-modal {
+    width: 100%;
+    max-width: 400px;
+    background: #0a0a12;
+    border: 3px solid #7b2fff;
+    border-radius: 20px;
+    padding: 35px 25px;
+    text-align: center;
+    box-shadow: 0 0 50px #7b2fff88;
+  }
+  .nickname-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #7b2fff;
+  }
+  .nickname-subtitle {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 25px;
+  }
+  .nickname-input {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 16px;
+    border: 2px solid #7b2fff;
+    border-radius: 10px;
+    background: #1a0f2e;
+    color: #fff;
+    outline: none;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  .nickname-input:focus {
+    border-color: #9b4fff;
+    box-shadow: 0 0 20px #7b2fff55;
+  }
+  .nickname-error {
+    color: #f44336;
+    font-size: 13px;
+    font-weight: bold;
+    min-height: 18px;
+    margin-bottom: 15px;
+  }
+  .nickname-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #7b2fff;
+    color: #fff;
+    transition: 0.2s;
+  }
+  .nickname-btn:hover { background: #9b4fff; }
+  .nickname-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .top-bar {
+    position: fixed;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    z-index: 100;
+  }
+  .player-box {
+    padding: 3px 8px;
+    border: 2px solid #7b2fff;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #1a0f2e;
+    box-shadow: 0 0 8px #7b2fff55;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .player-box .avatar { font-size: 12px; }
+  .player-box .nick { color: #fff; }
+  .player-box .title {
+    color: #ffd700;
+    font-size: 10px;
+    margin-left: 3px;
+    padding-left: 5px;
+    border-left: 1px solid #ffffff33;
+  }
+  .currencies { display: flex; gap: 5px; }
+  .diamonds {
+    padding: 3px 8px;
+    border: 2px solid #4fc3f7;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #1a0f2e;
+    box-shadow: 0 0 8px #4fc3f755;
+    color: #4fc3f7;
+  }
+  .coins {
+    padding: 3px 8px;
+    border: 2px solid #ffd700;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #1a0f2e;
+    box-shadow: 0 0 8px #ffd70055;
+    color: #ffd700;
+  }
+
+  h1 {
+    text-align: center;
+    margin-top: 55px;
+    margin-bottom: 15px;
+    font-size: 24px;
+    text-shadow: 0 0 20px #7b2fff;
+  }
+
+  .cases-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .case-card {
+    border: 2px solid #7b2fff;
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+    background: linear-gradient(145deg, #2a1a4a, #1a0f2e);
+    box-shadow: 0 0 20px #7b2fff33, inset 0 0 15px #00000088;
+    transition: 0.2s;
+  }
+  .case-card.locked {
+    border-color: #444;
+    background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .case-card:not(.locked):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px #7b2fff66, inset 0 0 15px #00000088;
+  }
+  .case-name {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  .case-card.locked .case-name { color: #666; }
+  .case-chest {
+    font-size: 60px;
+    line-height: 1;
+    margin: 6px 0 10px;
+    filter: drop-shadow(0 0 15px #7b2fff88);
+  }
+  .case-chest img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+  }
+  .case-card.locked .case-chest {
+    filter: grayscale(100%) drop-shadow(0 0 5px #000);
+    opacity: 0.5;
+  }
+  .case-card .open-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #7b2fff;
+    color: #fff;
+    transition: 0.2s;
+    display: block;
+    margin: 0 auto;
+  }
+  .case-card .open-btn:hover { background: #9b4fff; }
+  .case-card .open-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .case-card .open-btn.diamonds { background: #4fc3f7; color: #000; }
+  .case-card .open-btn.diamonds:hover { background: #6fd3ff; }
+  .soon-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #666;
+    letter-spacing: 2px;
+  }
+
+  .tab-section { display: none; }
+  .tab-section.active { display: block; }
+
+  #tab-inventory {
+    background: url('https://avatars.mds.yandex.net/i?id=5f3a0e2a4d555f3f1f1c3d2afe0b059753720983-3687098-images-thumbs&n=13') no-repeat center center fixed;
+    background-size: cover;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 65px;
+    overflow-y: auto;
+    padding: 15px;
+    z-index: 50;
+  }
+
+  #tab-profile {
+    background: #000000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 65px;
+    overflow-y: auto;
+    padding: 15px;
+    z-index: 50;
+  }
+
+  .sort-wrapper {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 60;
+    width: 200px;
+  }
+  .sort-btn {
+    width: 100%;
+    padding: 6px 12px;
+    border: 2px solid #7b2fff;
+    border-radius: 8px;
+    background: #000000;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.2s;
+  }
+  .sort-btn:hover {
+    background: #1a0f2e;
+    box-shadow: 0 0 12px #7b2fff88;
+  }
+  .sort-btn .arrow {
+    font-size: 10px;
+    transition: 0.2s;
+  }
+  .sort-btn.open .arrow {
+    transform: rotate(180deg);
+  }
+  .sort-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #000000;
+    border: 2px solid #7b2fff;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    display: none;
+    z-index: 70;
+  }
+  .sort-menu.open { display: block; }
+  .sort-menu-item {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+    transition: 0.2s;
+    border-bottom: 1px solid #7b2fff33;
+  }
+  .sort-menu-item:last-child { border-bottom: none; }
+  .sort-menu-item:hover {
+    background: #2a1a4a;
+  }
+  .sort-menu-item.active {
+    color: #ffd700;
+  }
+
+  .inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+  }
+  .inv-card {
+    border: 2px solid #7b2fff;
+    border-radius: 12px;
+    padding: 10px 6px;
+    text-align: center;
+    background: #000000;
+    box-shadow: 0 0 15px #7b2fff33;
+  }
+  .inv-card img {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    margin-bottom: 6px;
+  }
+  .inv-card .inv-emoji {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .inv-card .inv-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .inv-card .inv-count {
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+  .inv-card .trade-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #444;
+    color: #fff;
+    transition: 0.2s;
+  }
+  .inv-card .trade-btn:hover { background: #666; }
+  .inv-card .sell-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #ffd700;
+    color: #000;
+    transition: 0.2s;
+  }
+  .inv-card .sell-btn:hover { background: #ffe94a; }
+
+  .profile-stats {
+    max-width: 500px;
+    margin: 20px auto 12px auto;
+    padding: 10px 12px;
+    border: 2px solid #7b2fff;
+    border-radius: 10px;
+    background: #000000;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: 0 0 15px #7b2fff33;
+  }
+  .profile-stats span {
+    color: #ffd700;
+  }
+  .profile-trade-btn {
+    display: block;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px;
+    border: 2px solid #7b2fff;
+    border-radius: 10px;
+    background: #000000;
+    color: #fff;
+    font-size: 14px;
+    font-weight: normal;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 0 15px #7b2fff33;
+  }
+  .profile-trade-btn:hover {
+    background: #1a0f2e;
+    box-shadow: 0 0 20px #7b2fff88;
+  }
+
+  .hotbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 65px;
+    background: rgba(10, 10, 18, 0.95);
+    border-top: 2px solid #7b2fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    z-index: 150;
+    box-shadow: 0 -5px 25px #7b2fff55;
+    padding: 0 10px;
+  }
+  .hotbar-btn {
+    padding: 8px 18px;
+    border: 2px solid #7b2fff;
+    border-radius: 8px;
+    background: #1a0f2e;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hotbar-btn:hover {
+    background: #2a1a4a;
+    box-shadow: 0 0 12px #7b2fff88;
+  }
+  .hotbar-btn.active {
+    background: #7b2fff;
+    box-shadow: 0 0 15px #7b2fff;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 15px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    width: 100%;
+    max-width: 550px;
+    background: #0a0a12;
+    border: 2px solid #7b2fff;
+    border-radius: 16px;
+    padding: 20px 15px;
+    text-align: center;
+    box-shadow: 0 0 40px #7b2fff88;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #fff;
+  }
+  .roulette-wrap {
+    position: relative;
+    width: 100%;
+    height: 100px;
+    border: 2px solid #7b2fff;
+    border-radius: 10px;
+    background: #0a0a12;
+    overflow: hidden;
+    box-shadow: 0 0 20px #7b2fff55;
+  }
+  .roulette-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform;
+  }
+  .roulette-item {
+    width: 85px;
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    border-right: 1px solid #ffffff11;
+  }
+  .roulette-item .emoji {
+    font-size: 30px;
+    margin-bottom: 3px;
+  }
+  .roulette-item .prize-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    margin-bottom: 3px;
+  }
+  .roulette-pointer {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: #ffd700;
+    box-shadow: 0 0 12px #ffd700;
+    z-index: 10;
+  }
+  .roulette-pointer::before,
+  .roulette-pointer::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+  }
+  .roulette-pointer::before {
+    top: 0;
+    border-top: 10px solid #ffd700;
+  }
+  .roulette-pointer::after {
+    bottom: 0;
+    border-bottom: 10px solid #ffd700;
+  }
+  .roulette-wrap::before,
+  .roulette-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 50px;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .roulette-wrap::before {
+    left: 0;
+    background: linear-gradient(to right, #0a0a12, transparent);
+  }
+  .roulette-wrap::after {
+    right: 0;
+    background: linear-gradient(to left, #0a0a12, transparent);
+  }
+  .modal-result {
+    margin-top: 18px;
+    font-size: 22px;
+    min-height: 30px;
+    font-weight: bold;
+    text-shadow: 0 0 15px currentColor;
+  }
+  .modal-close {
+    margin-top: 15px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #444;
+    color: #fff;
+    display: none;
+  }
+  .modal-close.active { display: inline-block; }
+  .modal-close:hover { background: #666; }
+
+  .modal-price-choice {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  .modal-price-choice button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .modal-price-choice .diamonds-btn {
+    background: #4fc3f7;
+    color: #000;
+  }
+  .modal-price-choice .coins-btn {
+    background: #ffd700;
+    color: #000;
+  }
+  .modal-price-choice button:hover {
+    opacity: 0.85;
+  }
+</style>
+</head>
+<body>
+
+<div class="nickname-overlay" id="nicknameOverlay">
+  <div class="nickname-modal">
+    <div class="nickname-title">👋 Добро пожаловать!</div>
+    <div class="nickname-subtitle">Введи ник и пароль</div>
+    <input type="text" class="nickname-input" id="nicknameInput" placeholder="Твой ник..." maxlength="20">
+    <input type="password" class="nickname-input" id="passwordInput" placeholder="Пароль...">
+    <div class="nickname-error" id="nicknameError"></div>
+    <button class="nickname-btn" id="nicknameBtn" disabled>Начать</button>
+  </div>
+</div>
+
+<div class="top-bar">
+  <div class="player-box">
+    <span class="avatar">👤</span>
+    <span class="nick" id="playerNick">—</span>
+    <span class="title" id="playerTitle"></span>
+  </div>
+  <div class="currencies">
+    <div class="diamonds">💎<span id="diamonds">100</span></div>
+    <div class="coins">🪙<span id="balance">150</span></div>
+  </div>
+</div>
+
+<div class="tab-section active" id="tab-cases">
+  <h1>🎁 КЕЙСЫ</h1>
+  <div class="cases-grid">
+    <div class="case-card" id="startCase">
+      <div class="case-name">ПРИВИЛЕГИИ</div>
+      <div class="case-chest">
+        <img src="https://avatars.mds.yandex.net/i?id=16441afe08ac42fc9e55b55df43ff7f4a4803992-4525867-images-thumbs&n=13" alt="chest">
+      </div>
+      <button class="open-btn diamonds" id="openBtn">Открыть (100 💎)</button>
+    </div>
+
+    <div class="case-card" id="itemsCase">
+      <div class="case-name">КЕЙС С ПРЕДМЕТАМИ</div>
+      <div class="case-chest">
+        <img src="https://avatars.mds.yandex.net/i?id=16441afe08ac42fc9e55b55df43ff7f4a4803992-4525867-images-thumbs&n=13" alt="chest">
+      </div>
+      <button class="open-btn" id="openItemsBtn">Открыть (150 🪙)</button>
+    </div>
+
+    <div class="case-card locked">
+      <div class="case-name">???</div>
+      <div class="case-chest">🧰</div>
+      <div class="soon-label">СКОРО</div>
+    </div>
+    <div class="case-card locked">
+      <div class="case-name">???</div>
+      <div class="case-chest">🧰</div>
+      <div class="soon-label">СКОРО</div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-section" id="tab-inventory">
+  <div class="sort-wrapper">
+    <button class="sort-btn" id="sortBtn">
+      <span>Сортировать по: <span id="sortLabel">Все</span></span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="sort-menu" id="sortMenu">
+      <div class="sort-menu-item active" data-filter="all">Все</div>
+      <div class="sort-menu-item" data-filter="items">Предметы</div>
+      <div class="sort-menu-item" data-filter="privileges">Привилегии</div>
+    </div>
+  </div>
+  <h1 style="margin-top: 70px;">🎒 ИНВЕНТАРЬ</h1>
+  <div class="inventory-grid" id="inventoryGrid"></div>
+</div>
+
+<div class="tab-section" id="tab-profile">
+  <h1 style="margin-top: 20px;">👤 ПРОФИЛЬ</h1>
+  <div class="profile-stats">
+    Открыто кейсов <span id="statOpened">0</span> | Потрачено алмазов <span id="statSpentDiamonds">0</span> 💎 | Потрачено монет <span id="statSpentCoins">0</span> 🪙
+  </div>
+  <button class="profile-trade-btn" id="tradeBtn">🤝 Обмен 🤝</button>
+</div>
+
+<div class="hotbar">
+  <button class="hotbar-btn active" data-tab="cases">🎁 Кейсы</button>
+  <button class="hotbar-btn" data-tab="inventory">🎒 Инвентарь</button>
+  <button class="hotbar-btn" data-tab="profile">👤 Профиль</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">КЕЙС</div>
+    <div id="priceChoice" class="modal-price-choice" style="display:none;">
+      <button class="diamonds-btn" id="payDiamonds">50 💎</button>
+      <button class="coins-btn" id="payCoins">150 🪙</button>
+    </div>
+    <div class="roulette-wrap" id="rouletteWrap">
+      <div class="roulette-track" id="rouletteTrack"></div>
+      <div class="roulette-pointer"></div>
+    </div>
+    <div class="modal-result" id="modalResult"></div>
+    <button class="modal-close" id="modalClose">Закрыть</button>
+  </div>
+    </div>
+    <script>
+// ==== НАСТРОЙКИ ====
+const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
+const ITEMS_CASE_PRICE_DIAMONDS = 50;
+const ITEMS_CASE_PRICE_COINS = 150;
+const START_BALANCE = 150;
+const START_DIAMONDS = 100;
+const ITEM_WIDTH = 85;
+const SPIN_DURATION = 15000;
+const EXTRA_ITEMS = 50;
+
+const PRIVILEGES = [
+  { name: 'Нуб',            chance: 55,   color: '#888888', emoji: '🍞', type: 'privilege',
+    onlineIncome: 10, onlineDiamondIncome: 5,
+    img: 'https://avatars.mds.yandex.net/i?id=b686e31918b27298a31bf560b465f3cac54e3a2c-5291569-images-thumbs&n=13' },
+  { name: 'Герой',          chance: 30,   color: '#4caf50', emoji: '🟢', type: 'privilege',
+    onlineIncome: 15, onlineDiamondIncome: 5,
+    img: 'https://avatars.mds.yandex.net/i?id=ef6310ef0ec2848cfe738b4c24cd5c7d7ed2f4d6-5514587-images-thumbs&n=13' },
+  { name: 'Принц',          chance: 8,    color: '#2196f3', emoji: '🔵', type: 'privilege',
+    onlineIncome: 20, onlineDiamondIncome: 5,
+    img: 'https://avatars.mds.yandex.net/i?id=e97e19bd0ebea0b182a513fb6d824812517e6471-5482565-images-thumbs&ref=rim&n=33&w=480&h=480' },
+  { name: 'Владыка',        chance: 4,    color: '#9c27b0', emoji: '🟣', type: 'privilege',
+    onlineIncome: 30, onlineDiamondIncome: 5,
+    img: 'https://avatars.mds.yandex.net/i?id=37dc5ea389f25277820254a75b11676ff6e5046c-10804794-images-thumbs&n=13' },
+  { name: 'Король мертвых', chance: 2,    color: '#ff9800', emoji: '🟠', type: 'privilege',
+    onlineIncome: 50, onlineDiamondIncome: 5,
+    img: 'https://avatars.mds.yandex.net/i?id=097723617623703de1728fa925e3f52f34b54e68-7016633-images-thumbs&n=13' },
+  { name: 'Титан',          chance: 0.8,  color: '#f44336', emoji: '🔴', type: 'privilege',
+    onlineIncome: 70, onlineDiamondIncome: 5,
+    img: 'https://avatars.mds.yandex.net/i?id=242096d8394bc312d9452d3d5b3e9fc4dab529ff-5236860-images-thumbs&n=13' },
+  { name: 'VIP',            chance: 0.2,  color: '#ffd700', emoji: '👑', type: 'privilege',
+    onlineIncome: 100, onlineDiamondIncome: 10,
+    img: 'https://avatars.mds.yandex.net/i?id=0e93523aa2d14b3dfa5c6c22a723a8edd7a3f067-9215166-images-thumbs&n=13' },
+];
+
+const ITEMS = [
+  { name: 'Железная лопата', chance: 18,   color: '#aaaaaa', emoji: '🪓', type: 'item',
+    sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://avatars.mds.yandex.net/i?id=e47a5761c618adf8f34fe1a4230b5a09fad64920-9224539-images-thumbs&n=13' },
+  { name: 'Железный топор',  chance: 18,   color: '#aaaaaa', emoji: '🪓', type: 'item',
+    sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0 },
+  { name: 'Железная кирка',  chance: 18,   color: '#aaaaaa', emoji: '⛏️', type: 'item',
+    sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0 },
+  { name: 'Алмазная лопата', chance: 12,   color: '#4fc3f7', emoji: '🪓', type: 'item',
+    sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://avatars.mds.yandex.net/i?id=3119864992466f0b6debff283cd8f883a21b7b26-7086351-images-thumbs&n=13' },
+  { name: 'Алмазный топор',  chance: 12,   color: '#4fc3f7', emoji: '🪓', type: 'item',
+    sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://avatars.mds.yandex.net/i?id=0c232fff1e410ed63535b29933671b71df26b5e1-5743679-images-thumbs&n=13' },
+  { name: 'Алмазная кирка',  chance: 12,   color: '#4fc3f7', emoji: '⛏️', type: 'item',
+    sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://avatars.mds.yandex.net/i?id=735b7a08ce4747110e504ea50787d87dd53eaf15-12154386-images-thumbs&n=13' },
+  { name: 'Лопата титана',   chance: 3.5,  color: '#7b2fff', emoji: '🪓', type: 'item',
+    sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
+    img: 'https://avatars.mds.yandex.net/i?id=265a4f87aebebf821650cba6cfe23931883c41da-5340698-images-thumbs&n=13' },
+  { name: 'Топор титана',    chance: 3.5,  color: '#7b2fff', emoji: '🪓', type: 'item',
+    sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
+    img: 'https://avatars.mds.yandex.net/i?id=7146573a9529f0f629f9a3a1667c88c8_l-5232506-images-thumbs&ref=rim&n=13&w=900&h=900' },
+  { name: 'Кирка титана',    chance: 3,    color: '#7b2fff', emoji: '⛏️', type: 'item',
+    sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
+    img: 'https://avatars.mds.yandex.net/i?id=b6bb765877ca1d5fa58ca52ccaa14cc08749c723-5884528-images-thumbs&n=13' },
+];
+
+const RARITY_ORDER = ['Нуб', 'Герой', 'Принц', 'Владыка', 'Король мертвых', 'Титан', 'VIP'];
+
+// ==== СОСТОЯНИЕ ====
+let balance = START_BALANCE;
+let diamonds = START_DIAMONDS;
+let isOpening = false;
+let bestTitle = null;
+let playerNick = '';
+let privilegeInventory = [];
+let itemInventory = [];
+let currentFilter = 'all';
+let isOnline = true;
+let totalOpened = 0;
+let totalSpentDiamonds = 0;
+let totalSpentCoins = 0;
+
+// ==== ЭЛЕМЕНТЫ ====
+const trackEl       = document.getElementById('rouletteTrack');
+const wrapEl        = document.getElementById('rouletteWrap');
+const modalResult   = document.getElementById('modalResult');
+const modalOverlay  = document.getElementById('modalOverlay');
+const modalClose    = document.getElementById('modalClose');
+const modalTitle    = document.getElementById('modalTitle');
+const priceChoice   = document.getElementById('priceChoice');
+const payDiamonds   = document.getElementById('payDiamonds');
+const payCoins      = document.getElementById('payCoins');
+const balanceEl     = document.getElementById('balance');
+const diamondsEl    = document.getElementById('diamonds');
+const openBtn       = document.getElementById('openBtn');
+const openItemsBtn  = document.getElementById('openItemsBtn');
+const playerNickEl  = document.getElementById('playerNick');
+const playerTitleEl = document.getElementById('playerTitle');
+const nicknameOverlay = document.getElementById('nicknameOverlay');
+const nicknameInput   = document.getElementById('nicknameInput');
+const passwordInput   = document.getElementById('passwordInput');
+const nicknameBtn     = document.getElementById('nicknameBtn');
+const nicknameError   = document.getElementById('nicknameError');
+const inventoryGrid   = document.getElementById('inventoryGrid');
+const sortBtn         = document.getElementById('sortBtn');
+const sortMenu        = document.getElementById('sortMenu');
+const sortLabel       = document.getElementById('sortLabel');
+const statOpenedEl        = document.getElementById('statOpened');
+const statSpentDiamondsEl = document.getElementById('statSpentDiamonds');
+const statSpentCoinsEl    = document.getElementById('statSpentCoins');
+const tradeBtn        = document.getElementById('tradeBtn');
+
+// ==== ФУНКЦИИ ====
+function updateBalance() {
+  balanceEl.textContent = Math.floor(balance);
+  diamondsEl.textContent = Math.floor(diamonds);
+  statOpenedEl.textContent = totalOpened;
+  statSpentDiamondsEl.textContent = totalSpentDiamonds;
+  statSpentCoinsEl.textContent = totalSpentCoins;
+}
+
+function updateTitle() {
+  if (bestTitle) {
+    playerTitleEl.textContent = `« ${bestTitle.name} »`;
+    playerTitleEl.style.color = bestTitle.color;
+  } else {
+    playerTitleEl.textContent = '';
+  }
+}
+
+function rollPrize(list) {
+  const roll = Math.random() * 100;
+  let sum = 0;
+  for (const p of list) {
+    sum += p.chance;
+    if (roll < sum) return p;
+  }
+  return list[0];
+}
+
+function createItem(prize) {
+  const div = document.createElement('div');
+  div.className = 'roulette-item';
+  div.style.color = prize.color;
+
+  let icon;
+  if (prize.img) {
+    icon = `<img class="prize-img" src="${prize.img}" alt="${prize.name}">`;
+  } else {
+    icon = `<div class="emoji">${prize.emoji}</div>`;
+  }
+
+  div.innerHTML = `${icon}<div>${prize.name}</div>`;
+  return div;
+}
+
+function addPrivilegeToInventory(prize) {
+  const alreadyHave = privilegeInventory.some(p => p.name === prize.name);
+  if (alreadyHave) return false;
+  privilegeInventory.push({ ...prize, count: 1 });
+  return true;
+}
+
+function addItemToInventory(prize) {
+  const existing = itemInventory.find(p => p.name === prize.name);
+  if (existing) {
+    existing.count++;
+  } else {
+    itemInventory.push({ ...prize, count: 1 });
+  }
+  return true;
+}
+
+function renderInventory() {
+  let filteredPriv = [];
+  let filteredItems = [];
+
+  if (currentFilter === 'all' || currentFilter === 'privileges') {
+    filteredPriv = privilegeInventory;
+  }
+  if (currentFilter === 'all' || currentFilter === 'items') {
+    filteredItems = itemInventory;
+  }
+
+  if (filteredPriv.length === 0 && filteredItems.length === 0) {
+    inventoryGrid.innerHTML = '';
+    return;
+  }
+
+  inventoryGrid.innerHTML = '';
+
+  const sortedPriv = [...filteredPriv].sort((a, b) => {
+    return RARITY_ORDER.indexOf(b.name) - RARITY_ORDER.indexOf(a.name);
+  });
+
+  sortedPriv.forEach(prize => {
+    const card = document.createElement('div');
+    card.className = 'inv-card';
+
+    let icon;
+    if (prize.img) {
+      icon = `<img src="${prize.img}" alt="${prize.name}">`;
+    } else {
+      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
+    }
+
+    card.innerHTML = `
+      ${icon}
+      <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
+      <button class="trade-btn" data-name="${prize.name}">Обмен</button>
+    `;
+    inventoryGrid.appendChild(card);
+  });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    const orderA = a.name.includes('титана') ? 3 : a.name.includes('Алмазная') || a.name.includes('Алмазный') ? 2 : 1;
+    const orderB = b.name.includes('титана') ? 3 : b.name.includes('Алмазная') || b.name.includes('Алмазный') ? 2 : 1;
+    return orderB - orderA;
+  });
+
+  sortedItems.forEach(prize => {
+    const card = document.createElement('div');
+    card.className = 'inv-card';
+
+    let icon;
+    if (prize.img) {
+      icon = `<img src="${prize.img}" alt="${prize.name}">`;
+    } else {
+      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
+    }
+
+    let sellButtons = '';
+    if (prize.sellPriceDiamonds > 0) {
+      sellButtons = `
+        <button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>
+        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:4px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} 💎)</button>
+      `;
+    } else {
+      sellButtons = `<button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>`;
+    }
+
+    card.innerHTML = `
+      ${icon}
+      <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
+      <div class="inv-count">x${prize.count}</div>
+      ${sellButtons}
+    `;
+    inventoryGrid.appendChild(card);
+  });
+
+  inventoryGrid.querySelectorAll('.trade-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      alert('Обмен пока в разработке: ' + btn.dataset.name);
+    });
+  });
+
+  inventoryGrid.querySelectorAll('.sell-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      const currency = btn.dataset.currency;
+      const item = itemInventory.find(p => p.name === name);
+      if (!item) return;
+
+      if (currency === 'coins') {
+        balance += item.sellPriceCoins;
+      } else {
+        diamonds += item.sellPriceDiamonds;
+      }
+
+      item.count--;
+      if (item.count <= 0) {
+        itemInventory = itemInventory.filter(p => p.name !== name);
+      }
+
+      updateBalance();
+      renderInventory();
+      saveAccount();
+    });
+  });
+}
+
+function showIncomePopup(amount, currency) {
+  const popup = document.createElement('div');
+  popup.textContent = `+${amount} ${currency}`;
+  popup.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: #000000;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 300;
+    box-shadow: 0 0 15px #ffd70088;
+    transition: opacity 1s, transform 1s;
+    opacity: 1;
+  `;
+  document.body.appendChild(popup);
+
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    popup.style.transform = 'translateY(-20px)';
+  }, 2000);
+
+  setTimeout(() => {
+    popup.remove();
+  }, 3200);
+}
+
+function startIncome() {
+  setInterval(() => {
+    if (!isOnline) return;
+
+    let incomeCoins = 0;
+    let incomeDiamonds = 0;
+
+    if (bestTitle) {
+      incomeCoins += bestTitle.onlineIncome;
+      if (bestTitle.onlineDiamondIncome > 0) {
+        incomeDiamonds += bestTitle.onlineDiamondIncome;
+      }
+    }
+
+    itemInventory.forEach(item => {
+      if (item.passiveIncomeCoins > 0) {
+        incomeCoins += item.passiveIncomeCoins * item.count;
+      }
+      if (item.passiveIncomeDiamonds > 0) {
+        incomeDiamonds += item.passiveIncomeDiamonds * item.count;
+      }
+    });
+
+    if (incomeCoins > 0) {
+      balance += incomeCoins;
+      showIncomePopup(incomeCoins, '🪙');
+    }
+    if (incomeDiamonds > 0) {
+      diamonds += incomeDiamonds;
+      showIncomePopup(incomeDiamonds, '💎');
+    }
+
+    if (incomeCoins > 0 || incomeDiamonds > 0) {
+      updateBalance();
+      saveAccount();
+    }
+  }, 60 * 1000);
+}
+
+// ==== СОХРАНЕНИЕ ====
+function saveAccount() {
+  if (!playerNick) return;
+  const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+  accounts[playerNick] = {
+    password: accounts[playerNick]?.password || '',
+    balance: balance,
+    diamonds: diamonds,
+    privilegeInventory: privilegeInventory.map(p => p.name),
+    itemInventory: itemInventory.map(p => ({ name: p.name, count: p.count })),
+    bestTitle: bestTitle ? bestTitle.name : null,
+    totalOpened: totalOpened,
+    totalSpentDiamonds: totalSpentDiamonds,
+    totalSpentCoins: totalSpentCoins
+  };
+  localStorage.setItem('accounts', JSON.stringify(accounts));
+}
+
+function loadAccount(nick, password) {
+  const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+  if (!accounts[nick]) return 'new';
+  if (accounts[nick].password !== password) return 'wrongpass';
+  balance = accounts[nick].balance;
+  diamonds = accounts[nick].diamonds;
+  privilegeInventory = (accounts[nick].privilegeInventory || []).map(name => {
+    const p = PRIVILEGES.find(x => x.name === name);
+    return p ? { ...p, count: 1 } : null;
+  }).filter(Boolean);
+  itemInventory = (accounts[nick].itemInventory || []).map(obj => {
+    const p = ITEMS.find(x => x.name === obj.name);
+    return p ? { ...p, count: obj.count } : null;
+  }).filter(Boolean);
+  bestTitle = accounts[nick].bestTitle ? PRIVILEGES.find(p => p.name === accounts[nick].bestTitle) : null;
+  totalOpened = accounts[nick].totalOpened || 0;
+  totalSpentDiamonds = accounts[nick].totalSpentDiamonds || 0;
+  totalSpentCoins = accounts[nick].totalSpentCoins || 0;
+  return 'ok';
+}
+
+// ==== ОТКРЫТИЕ КЕЙСА ====
+let currentPrizeList = PRIVILEGES;
+let currentCaseType = 'privileges';
+
+function showOpenModal(caseType) {
+  currentCaseType = caseType;
+  currentPrizeList = caseType === 'privileges' ? PRIVILEGES : ITEMS;
+
+  modalTitle.textContent = caseType === 'privileges' ? 'ПРИВИЛЕГИИ' : 'КЕЙС С ПРЕДМЕТАМИ';
+  modalOverlay.classList.add('active');
+  modalResult.textContent = '';
+  modalClose.classList.remove('active');
+  priceChoice.style.display = 'none';
+  wrapEl.style.display = 'none';
+
+  if (caseType === 'items') {
+    priceChoice.style.display = 'flex';
+  } else {
+    startSpin('diamonds');
+  }
+}
+
+payDiamonds.addEventListener('click', () => {
+  if (diamonds < ITEMS_CASE_PRICE_DIAMONDS) {
+    modalResult.textContent = 'Недостаточно алмазов!';
+    modalResult.style.color = '#f44336';
+    return;
+  }
+  diamonds -= ITEMS_CASE_PRICE_DIAMONDS;
+  totalSpentDiamonds += ITEMS_CASE_PRICE_DIAMONDS;
+  startSpin('diamonds');
+});
+
+payCoins.addEventListener('click', () => {
+  if (balance < ITEMS_CASE_PRICE_COINS) {
+    modalResult.textContent = 'Недостаточно монет!';
+    modalResult.style.color = '#f44336';
+    return;
+  }
+  balance -= ITEMS_CASE_PRICE_COINS;
+  totalSpentCoins += ITEMS_CASE_PRICE_COINS;
+  startSpin('coins');
+});
+
+function startSpin(currency) {
+  if (isOpening) return;
+  isOpening = true;
+
+  if (currentCaseType === 'privileges') {
+    if (diamonds < PRIVILEGE_CASE_PRICE_DIAMONDS) {
+      modalResult.textContent = 'Недостаточно алмазов!';
+      modalResult.style.color = '#f44336';
+      isOpening = false;
+      return;
+    }
+    diamonds -= PRIVILEGE_CASE_PRICE_DIAMONDS;
+    totalSpentDiamonds += PRIVILEGE_CASE_PRICE_DIAMONDS;
+  }
+
+  totalOpened++;
+  updateBalance();
+
+  priceChoice.style.display = 'none';
+  wrapEl.style.display = 'block';
+
+  openBtn.disabled = true;
+  openItemsBtn.disabled = true;
+
+  const winPrize = rollPrize(currentPrizeList);
+
+  trackEl.innerHTML = '';
+  trackEl.style.transition = 'none';
+  trackEl.style.transform = 'translateX(0)';
+
+  const items = [];
+  for (let i = 0; i < 30; i++) {
+    items.push(currentPrizeList[Math.floor(Math.random() * currentPrizeList.length)]);
+  }
+  items.push(winPrize);
+  for (let i = 0; i < EXTRA_ITEMS; i++) {
+    items.push(currentPrizeList[Math.floor(Math.random() * currentPrizeList.length)]);
+  }
+
+  const winIndex = 30;
+  items.forEach(p => trackEl.appendChild(createItem(p)));
+
+  const wrapWidth = wrapEl.offsetWidth;
+  const centerOffset = wrapWidth / 2;
+
+  let targetX = -(winIndex * ITEM_WIDTH + ITEM_WIDTH / 2 - centerOffset);
+
+  const randomOffset = (Math.random() - 0.5) * 80;
+  targetX += randomOffset;
+
+  requestAnimationFrame(() => {
+    trackEl.style.transition = `transform ${SPIN_DURATION}ms cubic-bezier(0.15, 0.85, 0.3, 1)`;
+    trackEl.style.transform = `translateX(${targetX}px)`;
+  });
+
+  setTimeout(() => {
+    modalResult.textContent = winPrize.name;
+    modalResult.style.color = winPrize.color;
+
+    if (winPrize.type === 'privilege') {
+      const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
+      const newIdx = RARITY_ORDER.indexOf(winPrize.name);
+      if (newIdx > currentIdx) {
+        bestTitle = winPrize;
+        updateTitle();
+      }
+
+      const added = addPrivilegeToInventory(winPrize);
+      if (!added) {
+        modalResult.textContent = winPrize.name + ' (уже есть)';
+      }
+    } else {
+      addItemToInventory(winPrize);
+    }
+
+    renderInventory();
+    saveAccount();
+
+    modalClose.classList.add('active');
+    isOpening = false;
+    openBtn.disabled = false;
+    openItemsBtn.disabled = false;
+  }, SPIN_DURATION + 100);
+}
+
+function closeModal() {
+  modalOverlay.classList.remove('active');
+}
+
+// ==== КНОПКИ ОТКРЫТИЯ ====
+openBtn.addEventListener('click', () => showOpenModal('privileges'));
+openItemsBtn.addEventListener('click', () => showOpenModal('items'));
+
+// ==== ВВОД НИКА И ПАРОЛЯ ====
+function checkInputs() {
+  nicknameBtn.disabled = !(nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0);
+}
+
+nicknameInput.addEventListener('input', checkInputs);
+passwordInput.addEventListener('input', checkInputs);
+
+nicknameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !nicknameBtn.disabled) {
+    nicknameBtn.click();
+  }
+});
+passwordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !nicknameBtn.disabled) {
+    nicknameBtn.click();
+  }
+});
+
+nicknameBtn.addEventListener('click', () => {
+  const nick = nicknameInput.value.trim();
+  const pass = passwordInput.value;
+  if (!nick || !pass) return;
+
+  const result = loadAccount(nick, pass);
+
+  if (result === 'wrongpass') {
+    nicknameError.textContent = 'Неверный пароль!';
+    return;
+  }
+
+  if (result === 'new') {
+    const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+    accounts[nick] = {
+      password: pass,
+      balance: START_BALANCE,
+      diamonds: START_DIAMONDS,
+      privilegeInventory: [],
+      itemInventory: [],
+      bestTitle: null,
+      totalOpened: 0,
+      totalSpentDiamonds: 0,
+      totalSpentCoins: 0
+    };
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+  }
+
+  playerNick = nick;
+  playerNickEl.textContent = playerNick;
+  nicknameOverlay.classList.add('hidden');
+  nicknameError.textContent = '';
+
+  updateBalance();
+  updateTitle();
+  renderInventory();
+});
+
+// ==== ТРЕЙДЫ (заглушка) ====
+tradeBtn.addEventListener('click', () => {
+  alert('Трейды пока в разработке');
+});
+
+// ==== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ====
+const hotbarBtns = document.querySelectorAll('.hotbar-btn');
+const tabSections = document.querySelectorAll('.tab-section');
+
+hotbarBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+
+    hotbarBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    tabSections.forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+// ==== СОРТИРОВКА ====
+sortBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  sortMenu.classList.toggle('open');
+  sortBtn.classList.toggle('open');
+});
+
+sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const filter = item.dataset.filter;
+
+    sortMenu.querySelectorAll('.sort-menu-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+
+    sortLabel.textContent = item.textContent;
+    currentFilter = filter;
+    renderInventory();
+
+    sortMenu.classList.remove('open');
+    sortBtn.classList.remove('open');
+  });
+});
+
+document.addEventListener('click', () => {
+  sortMenu.classList.remove('open');
+  sortBtn.classList.remove('open');
+});
+
+// ==== СОБЫТИЯ ====
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) closeModal();
+});
+
+// старт
+updateBalance();
+updateTitle();
+renderInventory();
+startIncome();
+</script>
+
+</body>
+</html>

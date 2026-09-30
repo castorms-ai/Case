@@ -1020,8 +1020,8 @@
     <button class="upgrader-spin-btn" id="upgraderSpinBtn">Крутить</button>
     <button class="upgrader-close-btn" id="upgraderCloseBtn">Закрыть</button>
   </div>
-</div>
-<script>
+ </div>
+ <script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
@@ -1616,7 +1616,7 @@ function startSpin(currency) {
 function closeModal() {
   modalOverlay.classList.remove('active');
 }
- // ==== АПГРЕЙДЕР ====
+// ==== АПГРЕЙДЕР ====
 function openUpgrader() {
   upgraderYourItem = null;
   upgraderTargetItem = null;
@@ -1625,7 +1625,7 @@ function openUpgrader() {
   upgraderResult.style.color = '#ffd700';
   upgraderWheelWrap.classList.remove('active');
   upgraderTrack.innerHTML = '';
-  upgraderSpinBtn.disabled = false;
+  upgraderSpinBtn.disabled = true;
   upgraderSpinBtn.textContent = 'Крутить';
   upgraderOverlay.classList.add('active');
   renderUpgraderLists();
@@ -1636,7 +1636,6 @@ function closeUpgrader() {
 }
 
 function renderUpgraderLists() {
-  // Слева — твой инвентарь (только предметы и привилегии, которые есть)
   upgraderYourList.innerHTML = '';
   const allMine = [];
 
@@ -1646,6 +1645,14 @@ function renderUpgraderLists() {
   allMine.forEach(item => {
     const div = document.createElement('div');
     div.className = 'upgrader-item';
+
+    // Нельзя ставить привилегию, если она единственная в инвентаре
+    let disabled = false;
+    if (item.type === 'privilege' && privilegeInventory.length === 1) {
+      disabled = true;
+    }
+
+    if (disabled) div.classList.add('disabled');
     if (upgraderYourItem && upgraderYourItem.name === item.name) {
       div.classList.add('selected');
     }
@@ -1663,40 +1670,33 @@ function renderUpgraderLists() {
       <div class="item-count">${item.count > 1 ? 'x' + item.count : ''}</div>
     `;
 
-    div.addEventListener('click', () => {
-      if (upgraderSpinning) return;
-      upgraderYourItem = item;
-      renderUpgraderLists();
-      updateUpgraderChance();
-    });
+    if (!disabled) {
+      div.addEventListener('click', () => {
+        if (upgraderSpinning) return;
+        upgraderYourItem = item;
+        renderUpgraderLists();
+        updateUpgraderChance();
+      });
+    }
 
     upgraderYourList.appendChild(div);
   });
 
-  // Справа — все предметы каталога
   upgraderTargetList.innerHTML = '';
 
   ALL_ITEMS.forEach(item => {
     const div = document.createElement('div');
     div.className = 'upgrader-item';
 
-    // Проверяем, можно ли выбрать
     let disabled = false;
-
-    // Нельзя выбрать то же, что у тебя
     if (upgraderYourItem && upgraderYourItem.name === item.name) {
       disabled = true;
     }
-
-    // Привилегии не стакаются — если уже есть, нельзя
     if (item.type === 'privilege' && privilegeInventory.some(p => p.name === item.name)) {
       disabled = true;
     }
 
-    if (disabled) {
-      div.classList.add('disabled');
-    }
-
+    if (disabled) div.classList.add('disabled');
     if (upgraderTargetItem && upgraderTargetItem.name === item.name) {
       div.classList.add('selected');
     }
@@ -1757,45 +1757,38 @@ function startUpgrade() {
   const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
   const success = Math.random() * 100 < chance;
 
-  // Собираем ленту: 20 случайных + целевой/случайный в середине + 20 после
   upgraderTrack.innerHTML = '';
   upgraderTrack.style.transition = 'none';
   upgraderTrack.style.transform = 'translateX(0)';
   upgraderWheelWrap.classList.add('active');
 
   const items = [];
-  // Если успех — целевой в середине. Если нет — любой другой.
-  let resultItem;
-  if (success) {
-    resultItem = upgraderTargetItem;
-  } else {
-    // Берём случайный, НЕ равный целевому
-    const pool = ALL_ITEMS.filter(i => i.name !== upgraderTargetItem.name);
-    resultItem = pool[Math.floor(Math.random() * pool.length)];
-  }
 
   for (let i = 0; i < 20; i++) {
-    items.push(ALL_ITEMS[Math.floor(Math.random() * ALL_ITEMS.length)]);
+    items.push(Math.random() < 0.5 ? 'win' : 'lose');
   }
-  items.push(resultItem);
+
+  items.push(success ? 'win' : 'lose');
+
   for (let i = 0; i < 20; i++) {
-    items.push(ALL_ITEMS[Math.floor(Math.random() * ALL_ITEMS.length)]);
+    items.push(Math.random() < 0.5 ? 'win' : 'lose');
   }
 
   const winIndex = 20;
   const ITEM_W = 120;
 
-  items.forEach(p => {
+  items.forEach(type => {
     const div = document.createElement('div');
     div.className = 'upgrader-wheel-item';
-    div.style.color = p.color;
-    let icon;
-    if (p.img) {
-      icon = `<img class="prize-img" src="${p.img}" alt="${p.name}">`;
+
+    if (type === 'win') {
+      div.style.color = '#4fc3f7';
+      div.innerHTML = `<div class="emoji">💎</div><div>УСПЕХ</div>`;
     } else {
-      icon = `<div class="emoji">${p.emoji}</div>`;
+      div.style.color = '#f44336';
+      div.innerHTML = `<div class="emoji">💔</div><div>ПРОВАЛ</div>`;
     }
-    div.innerHTML = `${icon}<div>${p.name}</div>`;
+
     upgraderTrack.appendChild(div);
   });
 
@@ -1809,23 +1802,14 @@ function startUpgrade() {
   }, 50);
 
   setTimeout(() => {
-    // Успех или провал — обрабатываем
     if (success) {
       upgraderResult.textContent = `✅ УСПЕХ! Получен: ${upgraderTargetItem.name}`;
       upgraderResult.style.color = '#4caf50';
 
-      // Убираем свой предмет
       removeFromInventory(upgraderYourItem);
 
-      // Добавляем целевой
       if (upgraderTargetItem.type === 'privilege') {
         addPrivilegeToInventory(upgraderTargetItem);
-        const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
-        const newIdx = RARITY_ORDER.indexOf(upgraderTargetItem.name);
-        if (newIdx > currentIdx) {
-          bestTitle = upgraderTargetItem;
-          updateTitle();
-        }
       } else {
         addItemToInventory(upgraderTargetItem);
       }
@@ -1833,9 +1817,10 @@ function startUpgrade() {
       upgraderResult.textContent = `❌ ПРОВАЛ. Предмет потерян`;
       upgraderResult.style.color = '#f44336';
 
-      // Убираем свой предмет
       removeFromInventory(upgraderYourItem);
     }
+
+    recalcBestTitle();
 
     renderInventory();
     renderLeaders();
@@ -1847,7 +1832,7 @@ function startUpgrade() {
     renderUpgraderLists();
 
     upgraderSpinning = false;
-    upgraderSpinBtn.disabled = false;
+    upgraderSpinBtn.disabled = true;
     upgraderSpinBtn.textContent = 'Крутить';
   }, 7200);
 }
@@ -1864,6 +1849,27 @@ function removeFromInventory(item) {
       }
     }
   }
+}
+
+function recalcBestTitle() {
+  if (privilegeInventory.length === 0) {
+    bestTitle = null;
+    updateTitle();
+    return;
+  }
+
+  let best = null;
+  let bestIdx = -1;
+  privilegeInventory.forEach(p => {
+    const idx = RARITY_ORDER.indexOf(p.name);
+    if (idx > bestIdx) {
+      bestIdx = idx;
+      best = p;
+    }
+  });
+
+  bestTitle = best;
+  updateTitle();
 }
 
 // ==== ОБРАБОТЧИКИ АПГРЕЙДЕРА ====
@@ -1997,7 +2003,3 @@ updateTitle();
 renderInventory();
 renderLeaders();
 startIncome();
-</script>
-
-</body>
-      </html>

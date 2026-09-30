@@ -1612,6 +1612,8 @@ function startSpin(currency) {
 function closeModal() {
   modalOverlay.classList.remove('active');
 }
+  openBtn.addEventListener('click', () => showOpenModal('privileges'));
+openItemsBtn.addEventListener('click', () => showOpenModal('items'));
   // ==== АПГРЕЙДЕР ====
 function openUpgrader() {
   upgraderYourItem = null;

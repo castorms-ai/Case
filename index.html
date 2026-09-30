@@ -376,7 +376,7 @@
 
   .profile-stats {
     max-width: 800px;
-    margin: 40px auto 25px auto;
+    margin: 30px auto 25px auto;
     padding: 20px 25px;
     border: 4px solid #7b2fff;
     border-radius: 20px;
@@ -390,6 +390,74 @@
   .profile-stats span {
     color: #ffd700;
   }
+
+  .leaders-wrap {
+    display: flex;
+    gap: 20px;
+    max-width: 800px;
+    margin: 30px auto;
+    justify-content: center;
+  }
+  .leaders-col {
+    flex: 1;
+    border: 4px solid #7b2fff;
+    border-radius: 20px;
+    background: #000000;
+    padding: 15px;
+    box-shadow: 0 0 25px #7b2fff33;
+  }
+  .leaders-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #7b2fff55;
+    color: #ffd700;
+  }
+  .leaders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .leader-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #0a0a12;
+    border: 2px solid #7b2fff33;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .leader-row .place {
+    color: #aaa;
+    width: 35px;
+  }
+  .leader-row .name {
+    flex: 1;
+    color: #fff;
+    text-align: left;
+    padding-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .leader-row .value {
+    color: #ffd700;
+  }
+  .leader-row.top-1 {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px #ffd70055;
+  }
+  .leader-row.top-2 {
+    border-color: #c0c0c0;
+  }
+  .leader-row.top-3 {
+    border-color: #cd7f32;
+  }
+
   .profile-trade-btn {
     display: block;
     width: 100%;
@@ -694,6 +762,18 @@
   <div class="profile-stats">
     Открыто кейсов <span id="statOpened">0</span> | Потрачено алмазов <span id="statSpentDiamonds">0</span> 💎 | Потрачено монет <span id="statSpentCoins">0</span> 🪙
   </div>
+
+  <div class="leaders-wrap">
+    <div class="leaders-col">
+      <div class="leaders-title">🪙 Топ по монетам</div>
+      <div class="leaders-list" id="leadersCoins"></div>
+    </div>
+    <div class="leaders-col">
+      <div class="leaders-title">💎 Топ по алмазам</div>
+      <div class="leaders-list" id="leadersDiamonds"></div>
+    </div>
+  </div>
+
   <button class="profile-trade-btn" id="tradeBtn">🤝 Обмен 🤝</button>
 </div>
 
@@ -826,6 +906,8 @@ const statOpenedEl        = document.getElementById('statOpened');
 const statSpentDiamondsEl = document.getElementById('statSpentDiamonds');
 const statSpentCoinsEl    = document.getElementById('statSpentCoins');
 const tradeBtn        = document.getElementById('tradeBtn');
+const leadersCoinsEl   = document.getElementById('leadersCoins');
+const leadersDiamondsEl= document.getElementById('leadersDiamonds');
 
 // ==== ФУНКЦИИ ====
 function updateBalance() {
@@ -991,8 +1073,52 @@ function renderInventory() {
 
       updateBalance();
       renderInventory();
+      renderLeaders();
       saveAccount();
     });
+  });
+}
+
+function renderLeaders() {
+  const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+  const players = Object.keys(accounts).map(nick => ({
+    nick: nick,
+    balance: accounts[nick].balance || 0,
+    diamonds: accounts[nick].diamonds || 0
+  }));
+
+  // Топ по монетам
+  const sortedCoins = [...players].sort((a, b) => b.balance - a.balance).slice(0, 5);
+  leadersCoinsEl.innerHTML = '';
+  sortedCoins.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'leader-row';
+    if (i === 0) row.classList.add('top-1');
+    if (i === 1) row.classList.add('top-2');
+    if (i === 2) row.classList.add('top-3');
+    row.innerHTML = `
+      <span class="place">${i + 1}.</span>
+      <span class="name">${p.nick}</span>
+      <span class="value">${Math.floor(p.balance)} 🪙</span>
+    `;
+    leadersCoinsEl.appendChild(row);
+  });
+
+  // Топ по алмазам
+  const sortedDiamonds = [...players].sort((a, b) => b.diamonds - a.diamonds).slice(0, 5);
+  leadersDiamondsEl.innerHTML = '';
+  sortedDiamonds.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'leader-row';
+    if (i === 0) row.classList.add('top-1');
+    if (i === 1) row.classList.add('top-2');
+    if (i === 2) row.classList.add('top-3');
+    row.innerHTML = `
+      <span class="place">${i + 1}.</span>
+      <span class="name">${p.nick}</span>
+      <span class="value">${Math.floor(p.diamonds)} 💎</span>
+    `;
+    leadersDiamondsEl.appendChild(row);
   });
 }
 
@@ -1062,6 +1188,7 @@ function startIncome() {
     if (incomeCoins > 0 || incomeDiamonds > 0) {
       updateBalance();
       saveAccount();
+      renderLeaders();
     }
   }, 60 * 1000);
 }
@@ -1082,6 +1209,7 @@ function saveAccount() {
     totalSpentCoins: totalSpentCoins
   };
   localStorage.setItem('accounts', JSON.stringify(accounts));
+  renderLeaders();
 }
 
 function loadAccount(nick, password) {
@@ -1179,7 +1307,6 @@ function startSpin(currency) {
   trackEl.style.transition = 'none';
   trackEl.style.transform = 'translateX(0)';
 
-  // Собираем ленту: 30 случайных + выигрыш на 30-й позиции + 50 случайных
   const items = [];
   for (let i = 0; i < 30; i++) {
     items.push(currentPrizeList[Math.floor(Math.random() * currentPrizeList.length)]);
@@ -1192,7 +1319,6 @@ function startSpin(currency) {
   const winIndex = 30;
   items.forEach(p => trackEl.appendChild(createItem(p)));
 
-  // Вычисляем точную позицию — стрелка ровно по центру выигрыша
   const wrapWidth = wrapEl.offsetWidth;
   const centerOffset = wrapWidth / 2;
   const targetX = -(winIndex * ITEM_WIDTH + ITEM_WIDTH / 2 - centerOffset);
@@ -1295,6 +1421,7 @@ nicknameBtn.addEventListener('click', () => {
   updateBalance();
   updateTitle();
   renderInventory();
+  renderLeaders();
 });
 
 // ==== ТРЕЙДЫ (заглушка) ====
@@ -1357,6 +1484,7 @@ modalOverlay.addEventListener('click', (e) => {
 updateBalance();
 updateTitle();
 renderInventory();
+renderLeaders();
 startIncome();
 </script>
 

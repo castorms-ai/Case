@@ -480,7 +480,9 @@
   .roulette-wrap {
     position: relative;
     width: 100%;
+    max-width: 600px;
     height: 180px;
+    margin: 0 auto;
     border: 4px solid #7b2fff;
     border-radius: 18px;
     background: #0a0a12;
@@ -716,188 +718,14 @@
     <button class="modal-close" id="modalClose">Закрыть</button>
   </div>
 </div>
-let isOpening = false;
-let bestTitle = null;
-let playerNick = '';
-let privilegeInventory = [];
-let itemInventory = [];
-let currentFilter = 'all';
-let isOnline = true;
-let totalOpened = 0;
-let totalSpentDiamonds = 0;
-let totalSpentCoins = 0;
-
-// ==== ЭЛЕМЕНТЫ ====
-const trackEl       = document.getElementById('rouletteTrack');
-const wrapEl        = document.getElementById('rouletteWrap');
-const modalResult   = document.getElementById('modalResult');
-const modalOverlay  = document.getElementById('modalOverlay');
-const modalClose    = document.getElementById('modalClose');
-const modalTitle    = document.getElementById('modalTitle');
-const priceChoice   = document.getElementById('priceChoice');
-const payDiamonds   = document.getElementById('payDiamonds');
-const payCoins      = document.getElementById('payCoins');
-const balanceEl     = document.getElementById('balance');
-const diamondsEl    = document.getElementById('diamonds');
-const openBtn       = document.getElementById('openBtn');
-const openItemsBtn  = document.getElementById('openItemsBtn');
-const playerNickEl  = document.getElementById('playerNick');
-const playerTitleEl = document.getElementById('playerTitle');
-const nicknameOverlay = document.getElementById('nicknameOverlay');
-const nicknameInput   = document.getElementById('nicknameInput');
-const passwordInput   = document.getElementById('passwordInput');
-const nicknameBtn     = document.getElementById('nicknameBtn');
-const nicknameError   = document.getElementById('nicknameError');
-const inventoryGrid   = document.getElementById('inventoryGrid');
-const sortBtn         = document.getElementById('sortBtn');
-const sortMenu        = document.getElementById('sortMenu');
-const sortLabel       = document.getElementById('sortLabel');
-const statOpenedEl        = document.getElementById('statOpened');
-const statSpentDiamondsEl = document.getElementById('statSpentDiamonds');
-const statSpentCoinsEl    = document.getElementById('statSpentCoins');
-const tradeBtn        = document.getElementById('tradeBtn');
-
-// ==== ФУНКЦИИ ====
-function updateBalance() {
-  balanceEl.textContent = Math.floor(balance);
-  diamondsEl.textContent = Math.floor(diamonds);
-  statOpenedEl.textContent = totalOpened;
-  statSpentDiamondsEl.textContent = totalSpentDiamonds;
-  statSpentCoinsEl.textContent = totalSpentCoins;
-}
-
-function updateTitle() {
-  if (bestTitle) {
-    playerTitleEl.textContent = `« ${bestTitle.name} »`;
-    playerTitleEl.style.color = bestTitle.color;
-  } else {
-    playerTitleEl.textContent = '';
-  }
-}
-
-function rollPrize(list) {
-  const roll = Math.random() * 100;
-  let sum = 0;
-  for (const p of list) {
-    sum += p.chance;
-    if (roll < sum) return p;
-  }
-  return list[0];
-}
-
-function createItem(prize) {
-  const div = document.createElement('div');
-  div.className = 'roulette-item';
-  div.style.color = prize.color;
-
-  let icon;
-  if (prize.img) {
-    icon = `<img class="prize-img" src="${prize.img}" alt="${prize.name}">`;
-  } else {
-    icon = `<div class="emoji">${prize.emoji}</div>`;
-  }
-
-  div.innerHTML = `${icon}<div>${prize.name}</div>`;
-  return div;
-}
-
-function addPrivilegeToInventory(prize) {
-  const alreadyHave = privilegeInventory.some(p => p.name === prize.name);
-  if (alreadyHave) return false;
-  privilegeInventory.push({ ...prize, count: 1 });
-  return true;
-}
-
-function addItemToInventory(prize) {
-  const existing = itemInventory.find(p => p.name === prize.name);
-  if (existing) {
-    existing.count++;
-  } else {
-    itemInventory.push({ ...prize, count: 1 });
-  }
-  return true;
-}
-
-function renderInventory() {
-  let filteredPriv = [];
-  let filteredItems = [];
-
-  if (currentFilter === 'all' || currentFilter === 'privileges') {
-    filteredPriv = privilegeInventory;
-  }
-  if (currentFilter === 'all' || currentFilter === 'items') {
-    filteredItems = itemInventory;
-  }
-
-  if (filteredPriv.length === 0 && filteredItems.length === 0) {
-    inventoryGrid.innerHTML = '';
-    return;
-  }
-
-  inventoryGrid.innerHTML = '';
-
-  const sortedPriv = [...filteredPriv].sort((a, b) => {
-    return RARITY_ORDER.indexOf(b.name) - RARITY_ORDER.indexOf(a.name);
-  });
-
-  sortedPriv.forEach(prize => {
-    const card = document.createElement('div');
-    card.className = 'inv-card';
-
-    let icon;
-    if (prize.img) {
-      icon = `<img src="${prize.img}" alt="${prize.name}">`;
-    } else {
-      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
-    }
-
-    card.innerHTML = `
-      ${icon}
-      <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
-      <button class="trade-btn" data-name="${prize.name}">Обмен</button>
-    `;
-    inventoryGrid.appendChild(card);
-  });
-
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    const orderA = a.name.includes('титана') ? 3 : a.name.includes('Алмазная') || a.name.includes('Алмазный') ? 2 : 1;
-    const orderB = b.name.includes('титана') ? 3 : b.name.includes('Алмазная') || b.name.includes('Алмазный') ? 2 : 1;
-    return orderB - orderA;
-  });
-
-  sortedItems.forEach(prize => {
-    const card = document.createElement('div');
-    card.className = 'inv-card';
-
-    let icon;
-    if (prize.img) {
-      icon = `<img src="${prize.img}" alt="${prize.name}">`;
-    } else {
-      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
-    }
-
-    let sellButtons = '';
-    if (prize.sellPriceDiamonds > 0) {
-      sellButtons = `
-        <button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>
-        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:4px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} 💎)</button>
-      `;
-    } else {
-      sellButtons = `<button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>`;
-    }
-
-    card.innerHTML = `
-      ${icon}
-      <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
-      <div class="inv-count">x${prize.count}</div>
-     <script>
+<script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
 const ITEMS_CASE_PRICE_COINS = 150;
 const START_BALANCE = 150;
 const START_DIAMONDS = 100;
-const ITEM_WIDTH = 85;
+const ITEM_WIDTH = 150;
 const SPIN_DURATION = 15000;
 const EXTRA_ITEMS = 50;
 
@@ -1364,7 +1192,7 @@ function startSpin(currency) {
   const winIndex = 30;
   items.forEach(p => trackEl.appendChild(createItem(p)));
 
-  // Вычисляем точную позицию — стрелка ровно на выигрыше
+  // Вычисляем точную позицию — стрелка ровно по центру выигрыша
   const wrapWidth = wrapEl.offsetWidth;
   const centerOffset = wrapWidth / 2;
   const targetX = -(winIndex * ITEM_WIDTH + ITEM_WIDTH / 2 - centerOffset);

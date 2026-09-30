@@ -465,7 +465,7 @@
     display: block;
     width: 100%;
     max-width: 800px;
-    margin: 0 auto;
+    margin: 0 auto 15px auto;
     padding: 22px;
     border: 4px solid #7b2fff;
     border-radius: 20px;
@@ -686,6 +686,195 @@
   .modal-price-choice button:hover {
     opacity: 0.85;
   }
+
+  /* ==== АПГРЕЙДЕР ==== */
+  .upgrader-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    padding: 15px;
+    overflow-y: auto;
+  }
+  .upgrader-overlay.active { display: flex; }
+  .upgrader-modal {
+    width: 100%;
+    max-width: 900px;
+    background: #0a0a12;
+    border: 4px solid #7b2fff;
+    border-radius: 24px;
+    padding: 25px 20px;
+    box-shadow: 0 0 60px #7b2fff88;
+  }
+  .upgrader-title {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 0 20px #7b2fff;
+  }
+  .upgrader-cols {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .upgrader-col {
+    flex: 1;
+    border: 3px solid #7b2fff;
+    border-radius: 16px;
+    background: #000000;
+    padding: 10px;
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .upgrader-col-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #7b2fff55;
+    color: #ffd700;
+    position: sticky;
+    top: 0;
+    background: #000000;
+  }
+  .upgrader-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border: 2px solid #7b2fff33;
+    border-radius: 10px;
+    background: #0a0a12;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .upgrader-item:hover {
+    background: #1a0f2e;
+    border-color: #7b2fff;
+  }
+  .upgrader-item.selected {
+    border-color: #ffd700;
+    background: #2a1a0a;
+    box-shadow: 0 0 12px #ffd70055;
+  }
+  .upgrader-item.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .upgrader-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+  .upgrader-item .emoji {
+    font-size: 32px;
+    width: 40px;
+    text-align: center;
+  }
+  .upgrader-item .item-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+  }
+  .upgrader-item .item-count {
+    font-size: 14px;
+    color: #ffd700;
+    font-weight: bold;
+  }
+  .upgrader-chance {
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px #ffd70088;
+  }
+  .upgrader-spin-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 15px auto;
+    padding: 18px;
+    border: none;
+    border-radius: 14px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #7b2fff;
+    color: #fff;
+    transition: 0.2s;
+  }
+  .upgrader-spin-btn:hover { background: #9b4fff; }
+  .upgrader-spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .upgrader-close-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 12px;
+    border: none;
+    border-radius: 14px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #444;
+    color: #fff;
+    transition: 0.2s;
+  }
+  .upgrader-close-btn:hover { background: #666; }
+  .upgrader-wheel-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 140px;
+    margin: 0 auto 15px auto;
+    border: 4px solid #7b2fff;
+    border-radius: 16px;
+    background: #0a0a12;
+    overflow: hidden;
+    box-shadow: 0 0 35px #7b2fff55;
+    display: none;
+  }
+  .upgrader-wheel-wrap.active { display: block; }
+  .upgrader-track {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform;
+  }
+  .upgrader-wheel-item {
+    width: 120px;
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    border-right: 2px solid #ffffff11;
+  }
+  .upgrader-wheel-item .emoji {
+    font-size: 45px;
+    margin-bottom: 4px;
+  }
+  .upgrader-wheel-item .prize-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
 </style>
 </head>
 <body>
@@ -779,6 +968,7 @@
   </div>
 
   <button class="profile-trade-btn" id="tradeBtn">🤝 Обмен 🤝</button>
+  <button class="profile-trade-btn" id="upgraderBtn">⬆️ Апгрейдер ⬆️</button>
 </div>
 
 <div class="hotbar">
@@ -802,6 +992,35 @@
     <button class="modal-close" id="modalClose">Закрыть</button>
   </div>
 </div>
+
+<div class="upgrader-overlay" id="upgraderOverlay">
+  <div class="upgrader-modal">
+    <div class="upgrader-title">⬆️ АПГРЕЙДЕР ⬆️</div>
+
+    <div class="upgrader-cols">
+      <div class="upgrader-col">
+        <div class="upgrader-col-title">Твой инвентарь</div>
+        <div id="upgraderYourList"></div>
+      </div>
+      <div class="upgrader-col">
+        <div class="upgrader-col-title">Целевой предмет</div>
+        <div id="upgraderTargetList"></div>
+      </div>
+    </div>
+
+    <div class="upgrader-chance" id="upgraderChance">Выбери предметы</div>
+
+    <div class="upgrader-wheel-wrap" id="upgraderWheelWrap">
+      <div class="upgrader-track" id="upgraderTrack"></div>
+      <div class="roulette-pointer"></div>
+    </div>
+
+    <div class="upgrader-chance" id="upgraderResult"></div>
+
+    <button class="upgrader-spin-btn" id="upgraderSpinBtn">Крутить</button>
+    <button class="upgrader-close-btn" id="upgraderCloseBtn">Закрыть</button>
+  </div>
+</div>
 <script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
@@ -815,55 +1034,73 @@ const EXTRA_ITEMS = 50;
 
 const PRIVILEGES = [
   { name: 'Нуб',            chance: 55,   color: '#888888', emoji: '🍞', type: 'privilege',
+    points: 2,
     onlineIncome: 10, onlineDiamondIncome: 5,
     img: 'https://avatars.mds.yandex.net/i?id=b686e31918b27298a31bf560b465f3cac54e3a2c-5291569-images-thumbs&n=13' },
   { name: 'Герой',          chance: 30,   color: '#4caf50', emoji: '🟢', type: 'privilege',
+    points: 4,
     onlineIncome: 15, onlineDiamondIncome: 5,
     img: 'https://avatars.mds.yandex.net/i?id=ef6310ef0ec2848cfe738b4c24cd5c7d7ed2f4d6-5514587-images-thumbs&n=13' },
   { name: 'Принц',          chance: 8,    color: '#2196f3', emoji: '🔵', type: 'privilege',
+    points: 6,
     onlineIncome: 20, onlineDiamondIncome: 5,
     img: 'https://avatars.mds.yandex.net/i?id=e97e19bd0ebea0b182a513fb6d824812517e6471-5482565-images-thumbs&ref=rim&n=33&w=480&h=480' },
   { name: 'Владыка',        chance: 4,    color: '#9c27b0', emoji: '🟣', type: 'privilege',
+    points: 10,
     onlineIncome: 30, onlineDiamondIncome: 5,
     img: 'https://avatars.mds.yandex.net/i?id=37dc5ea389f25277820254a75b11676ff6e5046c-10804794-images-thumbs&n=13' },
   { name: 'Король мертвых', chance: 2,    color: '#ff9800', emoji: '🟠', type: 'privilege',
+    points: 30,
     onlineIncome: 50, onlineDiamondIncome: 5,
     img: 'https://avatars.mds.yandex.net/i?id=097723617623703de1728fa925e3f52f34b54e68-7016633-images-thumbs&n=13' },
   { name: 'Титан',          chance: 0.8,  color: '#f44336', emoji: '🔴', type: 'privilege',
+    points: 75,
     onlineIncome: 70, onlineDiamondIncome: 5,
     img: 'https://avatars.mds.yandex.net/i?id=242096d8394bc312d9452d3d5b3e9fc4dab529ff-5236860-images-thumbs&n=13' },
   { name: 'VIP',            chance: 0.2,  color: '#ffd700', emoji: '👑', type: 'privilege',
+    points: 150,
     onlineIncome: 100, onlineDiamondIncome: 10,
     img: 'https://avatars.mds.yandex.net/i?id=0e93523aa2d14b3dfa5c6c22a723a8edd7a3f067-9215166-images-thumbs&n=13' },
 ];
 
 const ITEMS = [
   { name: 'Железная лопата', chance: 18,   color: '#aaaaaa', emoji: '🪓', type: 'item',
+    points: 1,
     sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
     img: 'https://avatars.mds.yandex.net/i?id=e47a5761c618adf8f34fe1a4230b5a09fad64920-9224539-images-thumbs&n=13' },
   { name: 'Железный топор',  chance: 18,   color: '#aaaaaa', emoji: '🪓', type: 'item',
+    points: 1,
     sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0 },
   { name: 'Железная кирка',  chance: 18,   color: '#aaaaaa', emoji: '⛏️', type: 'item',
+    points: 1,
     sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0 },
   { name: 'Алмазная лопата', chance: 12,   color: '#4fc3f7', emoji: '🪓', type: 'item',
+    points: 3,
     sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
     img: 'https://avatars.mds.yandex.net/i?id=3119864992466f0b6debff283cd8f883a21b7b26-7086351-images-thumbs&n=13' },
   { name: 'Алмазный топор',  chance: 12,   color: '#4fc3f7', emoji: '🪓', type: 'item',
+    points: 3,
     sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
     img: 'https://avatars.mds.yandex.net/i?id=0c232fff1e410ed63535b29933671b71df26b5e1-5743679-images-thumbs&n=13' },
   { name: 'Алмазная кирка',  chance: 12,   color: '#4fc3f7', emoji: '⛏️', type: 'item',
+    points: 3,
     sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
     img: 'https://avatars.mds.yandex.net/i?id=735b7a08ce4747110e504ea50787d87dd53eaf15-12154386-images-thumbs&n=13' },
   { name: 'Лопата титана',   chance: 3.5,  color: '#7b2fff', emoji: '🪓', type: 'item',
+    points: 30,
     sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
     img: 'https://avatars.mds.yandex.net/i?id=265a4f87aebebf821650cba6cfe23931883c41da-5340698-images-thumbs&n=13' },
   { name: 'Топор титана',    chance: 3.5,  color: '#7b2fff', emoji: '🪓', type: 'item',
+    points: 30,
     sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
     img: 'https://avatars.mds.yandex.net/i?id=7146573a9529f0f629f9a3a1667c88c8_l-5232506-images-thumbs&ref=rim&n=13&w=900&h=900' },
   { name: 'Кирка титана',    chance: 3,    color: '#7b2fff', emoji: '⛏️', type: 'item',
+    points: 30,
     sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
     img: 'https://avatars.mds.yandex.net/i?id=b6bb765877ca1d5fa58ca52ccaa14cc08749c723-5884528-images-thumbs&n=13' },
 ];
+
+const ALL_ITEMS = [...PRIVILEGES, ...ITEMS];
 
 const RARITY_ORDER = ['Нуб', 'Герой', 'Принц', 'Владыка', 'Король мертвых', 'Титан', 'VIP'];
 
@@ -880,6 +1117,11 @@ let isOnline = true;
 let totalOpened = 0;
 let totalSpentDiamonds = 0;
 let totalSpentCoins = 0;
+
+// Апгрейдер
+let upgraderYourItem = null;
+let upgraderTargetItem = null;
+let upgraderSpinning = false;
 
 // ==== ЭЛЕМЕНТЫ ====
 const trackEl       = document.getElementById('rouletteTrack');
@@ -912,6 +1154,17 @@ const statSpentCoinsEl    = document.getElementById('statSpentCoins');
 const tradeBtn        = document.getElementById('tradeBtn');
 const leadersCoinsEl   = document.getElementById('leadersCoins');
 const leadersDiamondsEl= document.getElementById('leadersDiamonds');
+
+const upgraderBtn         = document.getElementById('upgraderBtn');
+const upgraderOverlay     = document.getElementById('upgraderOverlay');
+const upgraderYourList    = document.getElementById('upgraderYourList');
+const upgraderTargetList  = document.getElementById('upgraderTargetList');
+const upgraderChance      = document.getElementById('upgraderChance');
+const upgraderResult      = document.getElementById('upgraderResult');
+const upgraderSpinBtn     = document.getElementById('upgraderSpinBtn');
+const upgraderCloseBtn    = document.getElementById('upgraderCloseBtn');
+const upgraderWheelWrap   = document.getElementById('upgraderWheelWrap');
+const upgraderTrack       = document.getElementById('upgraderTrack');
 
 // ==== ФУНКЦИИ ====
 function updateBalance() {
@@ -1091,7 +1344,6 @@ function renderLeaders() {
     diamonds: accounts[nick].diamonds || 0
   }));
 
-  // Топ по монетам
   const sortedCoins = [...players].sort((a, b) => b.balance - a.balance).slice(0, 5);
   leadersCoinsEl.innerHTML = '';
   sortedCoins.forEach((p, i) => {
@@ -1108,7 +1360,6 @@ function renderLeaders() {
     leadersCoinsEl.appendChild(row);
   });
 
-  // Топ по алмазам
   const sortedDiamonds = [...players].sort((a, b) => b.diamonds - a.diamonds).slice(0, 5);
   leadersDiamondsEl.innerHTML = '';
   sortedDiamonds.forEach((p, i) => {
@@ -1365,10 +1616,266 @@ function startSpin(currency) {
 function closeModal() {
   modalOverlay.classList.remove('active');
 }
+// ==== АПГРЕЙДЕР ====
+function openUpgrader() {
+  upgraderYourItem = null;
+  upgraderTargetItem = null;
+  upgraderChance.textContent = 'Выбери предметы';
+  upgraderResult.textContent = '';
+  upgraderResult.style.color = '#ffd700';
+  upgraderWheelWrap.classList.remove('active');
+  upgraderTrack.innerHTML = '';
+  upgraderSpinBtn.disabled = false;
+  upgraderSpinBtn.textContent = 'Крутить';
+  upgraderOverlay.classList.add('active');
+  renderUpgraderLists();
+}
 
-// ==== КНОПКИ ОТКРЫТИЯ ====
-openBtn.addEventListener('click', () => showOpenModal('privileges'));
-openItemsBtn.addEventListener('click', () => showOpenModal('items'));
+function closeUpgrader() {
+  upgraderOverlay.classList.remove('active');
+}
+
+function renderUpgraderLists() {
+  // Слева — твой инвентарь (только предметы и привилегии, которые есть)
+  upgraderYourList.innerHTML = '';
+  const allMine = [];
+
+  privilegeInventory.forEach(p => allMine.push({ ...p, count: 1 }));
+  itemInventory.forEach(p => allMine.push({ ...p, count: p.count }));
+
+  allMine.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-item';
+    if (upgraderYourItem && upgraderYourItem.name === item.name) {
+      div.classList.add('selected');
+    }
+
+    let icon;
+    if (item.img) {
+      icon = `<img src="${item.img}" alt="${item.name}">`;
+    } else {
+      icon = `<div class="emoji">${item.emoji}</div>`;
+    }
+
+    div.innerHTML = `
+      ${icon}
+      <div class="item-name" style="color: ${item.color}">${item.name}</div>
+      <div class="item-count">${item.count > 1 ? 'x' + item.count : ''}</div>
+    `;
+
+    div.addEventListener('click', () => {
+      if (upgraderSpinning) return;
+      upgraderYourItem = item;
+      renderUpgraderLists();
+      updateUpgraderChance();
+    });
+
+    upgraderYourList.appendChild(div);
+  });
+
+  // Справа — все предметы каталога
+  upgraderTargetList.innerHTML = '';
+
+  ALL_ITEMS.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-item';
+
+    // Проверяем, можно ли выбрать
+    let disabled = false;
+
+    // Нельзя выбрать то же, что у тебя
+    if (upgraderYourItem && upgraderYourItem.name === item.name) {
+      disabled = true;
+    }
+
+    // Привилегии не стакаются — если уже есть, нельзя
+    if (item.type === 'privilege' && privilegeInventory.some(p => p.name === item.name)) {
+      disabled = true;
+    }
+
+    if (disabled) {
+      div.classList.add('disabled');
+    }
+
+    if (upgraderTargetItem && upgraderTargetItem.name === item.name) {
+      div.classList.add('selected');
+    }
+
+    let icon;
+    if (item.img) {
+      icon = `<img src="${item.img}" alt="${item.name}">`;
+    } else {
+      icon = `<div class="emoji">${item.emoji}</div>`;
+    }
+
+    div.innerHTML = `
+      ${icon}
+      <div class="item-name" style="color: ${item.color}">${item.name}</div>
+    `;
+
+    if (!disabled) {
+      div.addEventListener('click', () => {
+        if (upgraderSpinning) return;
+        upgraderTargetItem = item;
+        renderUpgraderLists();
+        updateUpgraderChance();
+      });
+    }
+
+    upgraderTargetList.appendChild(div);
+  });
+}
+
+function calcUpgradeChance(yourPoints, targetPoints) {
+  if (!yourPoints || !targetPoints) return 0;
+  let chance = (yourPoints / targetPoints) * 100;
+  if (chance > 90) chance = 90;
+  if (chance < 5) chance = 5;
+  return Math.round(chance);
+}
+
+function updateUpgraderChance() {
+  if (!upgraderYourItem || !upgraderTargetItem) {
+    upgraderChance.textContent = 'Выбери предметы';
+    upgraderSpinBtn.disabled = true;
+    return;
+  }
+
+  const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
+  upgraderChance.textContent = `Шанс: ${chance}%`;
+  upgraderSpinBtn.disabled = false;
+}
+
+function startUpgrade() {
+  if (upgraderSpinning) return;
+  if (!upgraderYourItem || !upgraderTargetItem) return;
+
+  upgraderSpinning = true;
+  upgraderSpinBtn.disabled = true;
+  upgraderResult.textContent = '';
+
+  const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
+  const success = Math.random() * 100 < chance;
+
+  // Собираем ленту: 20 случайных + целевой/случайный в середине + 20 после
+  upgraderTrack.innerHTML = '';
+  upgraderTrack.style.transition = 'none';
+  upgraderTrack.style.transform = 'translateX(0)';
+  upgraderWheelWrap.classList.add('active');
+
+  const items = [];
+  // Если успех — целевой в середине. Если нет — любой другой.
+  let resultItem;
+  if (success) {
+    resultItem = upgraderTargetItem;
+  } else {
+    // Берём случайный, НЕ равный целевому
+    const pool = ALL_ITEMS.filter(i => i.name !== upgraderTargetItem.name);
+    resultItem = pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  for (let i = 0; i < 20; i++) {
+    items.push(ALL_ITEMS[Math.floor(Math.random() * ALL_ITEMS.length)]);
+  }
+  items.push(resultItem);
+  for (let i = 0; i < 20; i++) {
+    items.push(ALL_ITEMS[Math.floor(Math.random() * ALL_ITEMS.length)]);
+  }
+
+  const winIndex = 20;
+  const ITEM_W = 120;
+
+  items.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-wheel-item';
+    div.style.color = p.color;
+    let icon;
+    if (p.img) {
+      icon = `<img class="prize-img" src="${p.img}" alt="${p.name}">`;
+    } else {
+      icon = `<div class="emoji">${p.emoji}</div>`;
+    }
+    div.innerHTML = `${icon}<div>${p.name}</div>`;
+    upgraderTrack.appendChild(div);
+  });
+
+  const wrapWidth = upgraderWheelWrap.offsetWidth;
+  const centerOffset = wrapWidth / 2;
+  const targetX = -(winIndex * ITEM_W + ITEM_W / 2 - centerOffset);
+
+  setTimeout(() => {
+    upgraderTrack.style.transition = 'transform 7000ms cubic-bezier(0.15, 0.85, 0.3, 1)';
+    upgraderTrack.style.transform = `translateX(${targetX}px)`;
+  }, 50);
+
+  setTimeout(() => {
+    // Успех или провал — обрабатываем
+    if (success) {
+      upgraderResult.textContent = `✅ УСПЕХ! Получен: ${upgraderTargetItem.name}`;
+      upgraderResult.style.color = '#4caf50';
+
+      // Убираем свой предмет
+      removeFromInventory(upgraderYourItem);
+
+      // Добавляем целевой
+      if (upgraderTargetItem.type === 'privilege') {
+        addPrivilegeToInventory(upgraderTargetItem);
+        const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
+        const newIdx = RARITY_ORDER.indexOf(upgraderTargetItem.name);
+        if (newIdx > currentIdx) {
+          bestTitle = upgraderTargetItem;
+          updateTitle();
+        }
+      } else {
+        addItemToInventory(upgraderTargetItem);
+      }
+    } else {
+      upgraderResult.textContent = `❌ ПРОВАЛ. Предмет потерян`;
+      upgraderResult.style.color = '#f44336';
+
+      // Убираем свой предмет
+      removeFromInventory(upgraderYourItem);
+    }
+
+    renderInventory();
+    renderLeaders();
+    saveAccount();
+
+    upgraderYourItem = null;
+    upgraderTargetItem = null;
+    upgraderChance.textContent = 'Выбери предметы';
+    renderUpgraderLists();
+
+    upgraderSpinning = false;
+    upgraderSpinBtn.disabled = false;
+    upgraderSpinBtn.textContent = 'Крутить';
+  }, 7200);
+}
+
+function removeFromInventory(item) {
+  if (item.type === 'privilege') {
+    privilegeInventory = privilegeInventory.filter(p => p.name !== item.name);
+  } else {
+    const found = itemInventory.find(p => p.name === item.name);
+    if (found) {
+      found.count--;
+      if (found.count <= 0) {
+        itemInventory = itemInventory.filter(p => p.name !== item.name);
+      }
+    }
+  }
+}
+
+// ==== ОБРАБОТЧИКИ АПГРЕЙДЕРА ====
+upgraderBtn.addEventListener('click', openUpgrader);
+upgraderCloseBtn.addEventListener('click', closeUpgrader);
+upgraderSpinBtn.addEventListener('click', startUpgrade);
+
+upgraderOverlay.addEventListener('click', (e) => {
+  if (e.target === upgraderOverlay && !upgraderSpinning) {
+    closeUpgrader();
+  }
+});
 
 // ==== ВВОД НИКА И ПАРОЛЯ ====
 function checkInputs() {
@@ -1493,4 +2000,5 @@ startIncome();
 </script>
 
 </body>
-</html>
+</html>   
+</script>

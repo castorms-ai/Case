@@ -381,12 +381,13 @@
     padding: 20px 25px;
     border: 4px solid #7b2fff;
     border-radius: 20px;
-    background: #000000;
+    background: rgba(40, 25, 10, 0.6);
     text-align: center;
     font-size: 22px;
     font-weight: bold;
     color: #fff;
-    box-shadow: 0 0 25px #7b2fff33;
+    box-shadow: 0 0 25px #7b2fff55;
+    backdrop-filter: blur(4px);
   }
   .profile-stats span {
     color: #ffd700;
@@ -403,9 +404,10 @@
     flex: 1;
     border: 4px solid #7b2fff;
     border-radius: 20px;
-    background: #000000;
+    background: rgba(40, 25, 10, 0.6);
     padding: 15px;
-    box-shadow: 0 0 25px #7b2fff33;
+    box-shadow: 0 0 25px #7b2fff55;
+    backdrop-filter: blur(4px);
   }
   .leaders-title {
     text-align: center;
@@ -427,7 +429,7 @@
     align-items: center;
     padding: 8px 12px;
     border-radius: 10px;
-    background: #0a0a12;
+    background: rgba(30, 20, 10, 0.7);
     border: 2px solid #7b2fff33;
     font-size: 18px;
     font-weight: bold;
@@ -467,16 +469,17 @@
     padding: 22px;
     border: 4px solid #7b2fff;
     border-radius: 20px;
-    background: #000000;
+    background: rgba(40, 25, 10, 0.6);
     color: #fff;
     font-size: 24px;
     font-weight: normal;
     cursor: pointer;
     transition: 0.2s;
-    box-shadow: 0 0 25px #7b2fff33;
+    box-shadow: 0 0 25px #7b2fff55;
+    backdrop-filter: blur(4px);
   }
   .profile-trade-btn:hover {
-    background: #1a0f2e;
+    background: rgba(60, 40, 20, 0.75);
     box-shadow: 0 0 35px #7b2fff88;
   }
 
@@ -798,7 +801,7 @@
     <div class="modal-result" id="modalResult"></div>
     <button class="modal-close" id="modalClose">Закрыть</button>
   </div>
- </div>
+</div>
 <script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;

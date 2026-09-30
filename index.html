@@ -716,7 +716,181 @@
     <button class="modal-close" id="modalClose">Закрыть</button>
   </div>
 </div>
- <script>
+let isOpening = false;
+let bestTitle = null;
+let playerNick = '';
+let privilegeInventory = [];
+let itemInventory = [];
+let currentFilter = 'all';
+let isOnline = true;
+let totalOpened = 0;
+let totalSpentDiamonds = 0;
+let totalSpentCoins = 0;
+
+// ==== ЭЛЕМЕНТЫ ====
+const trackEl       = document.getElementById('rouletteTrack');
+const wrapEl        = document.getElementById('rouletteWrap');
+const modalResult   = document.getElementById('modalResult');
+const modalOverlay  = document.getElementById('modalOverlay');
+const modalClose    = document.getElementById('modalClose');
+const modalTitle    = document.getElementById('modalTitle');
+const priceChoice   = document.getElementById('priceChoice');
+const payDiamonds   = document.getElementById('payDiamonds');
+const payCoins      = document.getElementById('payCoins');
+const balanceEl     = document.getElementById('balance');
+const diamondsEl    = document.getElementById('diamonds');
+const openBtn       = document.getElementById('openBtn');
+const openItemsBtn  = document.getElementById('openItemsBtn');
+const playerNickEl  = document.getElementById('playerNick');
+const playerTitleEl = document.getElementById('playerTitle');
+const nicknameOverlay = document.getElementById('nicknameOverlay');
+const nicknameInput   = document.getElementById('nicknameInput');
+const passwordInput   = document.getElementById('passwordInput');
+const nicknameBtn     = document.getElementById('nicknameBtn');
+const nicknameError   = document.getElementById('nicknameError');
+const inventoryGrid   = document.getElementById('inventoryGrid');
+const sortBtn         = document.getElementById('sortBtn');
+const sortMenu        = document.getElementById('sortMenu');
+const sortLabel       = document.getElementById('sortLabel');
+const statOpenedEl        = document.getElementById('statOpened');
+const statSpentDiamondsEl = document.getElementById('statSpentDiamonds');
+const statSpentCoinsEl    = document.getElementById('statSpentCoins');
+const tradeBtn        = document.getElementById('tradeBtn');
+
+// ==== ФУНКЦИИ ====
+function updateBalance() {
+  balanceEl.textContent = Math.floor(balance);
+  diamondsEl.textContent = Math.floor(diamonds);
+  statOpenedEl.textContent = totalOpened;
+  statSpentDiamondsEl.textContent = totalSpentDiamonds;
+  statSpentCoinsEl.textContent = totalSpentCoins;
+}
+
+function updateTitle() {
+  if (bestTitle) {
+    playerTitleEl.textContent = `« ${bestTitle.name} »`;
+    playerTitleEl.style.color = bestTitle.color;
+  } else {
+    playerTitleEl.textContent = '';
+  }
+}
+
+function rollPrize(list) {
+  const roll = Math.random() * 100;
+  let sum = 0;
+  for (const p of list) {
+    sum += p.chance;
+    if (roll < sum) return p;
+  }
+  return list[0];
+}
+
+function createItem(prize) {
+  const div = document.createElement('div');
+  div.className = 'roulette-item';
+  div.style.color = prize.color;
+
+  let icon;
+  if (prize.img) {
+    icon = `<img class="prize-img" src="${prize.img}" alt="${prize.name}">`;
+  } else {
+    icon = `<div class="emoji">${prize.emoji}</div>`;
+  }
+
+  div.innerHTML = `${icon}<div>${prize.name}</div>`;
+  return div;
+}
+
+function addPrivilegeToInventory(prize) {
+  const alreadyHave = privilegeInventory.some(p => p.name === prize.name);
+  if (alreadyHave) return false;
+  privilegeInventory.push({ ...prize, count: 1 });
+  return true;
+}
+
+function addItemToInventory(prize) {
+  const existing = itemInventory.find(p => p.name === prize.name);
+  if (existing) {
+    existing.count++;
+  } else {
+    itemInventory.push({ ...prize, count: 1 });
+  }
+  return true;
+}
+
+function renderInventory() {
+  let filteredPriv = [];
+  let filteredItems = [];
+
+  if (currentFilter === 'all' || currentFilter === 'privileges') {
+    filteredPriv = privilegeInventory;
+  }
+  if (currentFilter === 'all' || currentFilter === 'items') {
+    filteredItems = itemInventory;
+  }
+
+  if (filteredPriv.length === 0 && filteredItems.length === 0) {
+    inventoryGrid.innerHTML = '';
+    return;
+  }
+
+  inventoryGrid.innerHTML = '';
+
+  const sortedPriv = [...filteredPriv].sort((a, b) => {
+    return RARITY_ORDER.indexOf(b.name) - RARITY_ORDER.indexOf(a.name);
+  });
+
+  sortedPriv.forEach(prize => {
+    const card = document.createElement('div');
+    card.className = 'inv-card';
+
+    let icon;
+    if (prize.img) {
+      icon = `<img src="${prize.img}" alt="${prize.name}">`;
+    } else {
+      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
+    }
+
+    card.innerHTML = `
+      ${icon}
+      <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
+      <button class="trade-btn" data-name="${prize.name}">Обмен</button>
+    `;
+    inventoryGrid.appendChild(card);
+  });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    const orderA = a.name.includes('титана') ? 3 : a.name.includes('Алмазная') || a.name.includes('Алмазный') ? 2 : 1;
+    const orderB = b.name.includes('титана') ? 3 : b.name.includes('Алмазная') || b.name.includes('Алмазный') ? 2 : 1;
+    return orderB - orderA;
+  });
+
+  sortedItems.forEach(prize => {
+    const card = document.createElement('div');
+    card.className = 'inv-card';
+
+    let icon;
+    if (prize.img) {
+      icon = `<img src="${prize.img}" alt="${prize.name}">`;
+    } else {
+      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
+    }
+
+    let sellButtons = '';
+    if (prize.sellPriceDiamonds > 0) {
+      sellButtons = `
+        <button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>
+        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:4px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} 💎)</button>
+      `;
+    } else {
+      sellButtons = `<button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>`;
+    }
+
+    card.innerHTML = `
+      ${icon}
+      <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
+      <div class="inv-count">x${prize.count}</div>
+     <script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
@@ -948,7 +1122,7 @@ function renderInventory() {
     if (prize.sellPriceDiamonds > 0) {
       sellButtons = `
         <button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>
-        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:4px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} 💎)</button>
+        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:8px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} 💎)</button>
       `;
     } else {
       sellButtons = `<button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} 🪙)</button>`;
@@ -999,17 +1173,17 @@ function showIncomePopup(amount, currency) {
   popup.textContent = `+${amount} ${currency}`;
   popup.style.cssText = `
     position: fixed;
-    top: 100px;
-    right: 20px;
+    top: 150px;
+    right: 25px;
     background: #000000;
-    border: 2px solid #ffd700;
-    border-radius: 8px;
-    padding: 6px 12px;
+    border: 3px solid #ffd700;
+    border-radius: 12px;
+    padding: 10px 20px;
     color: #ffd700;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 22px;
     z-index: 300;
-    box-shadow: 0 0 15px #ffd70088;
+    box-shadow: 0 0 25px #ffd70088;
     transition: opacity 1s, transform 1s;
     opacity: 1;
   `;
@@ -1017,7 +1191,7 @@ function showIncomePopup(amount, currency) {
 
   setTimeout(() => {
     popup.style.opacity = '0';
-    popup.style.transform = 'translateY(-20px)';
+    popup.style.transform = 'translateY(-30px)';
   }, 2000);
 
   setTimeout(() => {
@@ -1177,6 +1351,7 @@ function startSpin(currency) {
   trackEl.style.transition = 'none';
   trackEl.style.transform = 'translateX(0)';
 
+  // Собираем ленту: 30 случайных + выигрыш на 30-й позиции + 50 случайных
   const items = [];
   for (let i = 0; i < 30; i++) {
     items.push(currentPrizeList[Math.floor(Math.random() * currentPrizeList.length)]);
@@ -1189,13 +1364,10 @@ function startSpin(currency) {
   const winIndex = 30;
   items.forEach(p => trackEl.appendChild(createItem(p)));
 
+  // Вычисляем точную позицию — стрелка ровно на выигрыше
   const wrapWidth = wrapEl.offsetWidth;
   const centerOffset = wrapWidth / 2;
-
-  let targetX = -(winIndex * ITEM_WIDTH + ITEM_WIDTH / 2 - centerOffset);
-
-  const randomOffset = (Math.random() - 0.5) * 30;
-  targetX += randomOffset;
+  const targetX = -(winIndex * ITEM_WIDTH + ITEM_WIDTH / 2 - centerOffset);
 
   requestAnimationFrame(() => {
     trackEl.style.transition = `transform ${SPIN_DURATION}ms cubic-bezier(0.15, 0.85, 0.3, 1)`;

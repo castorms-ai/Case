@@ -1614,50 +1614,6 @@ function closeModal() {
 }
   openBtn.addEventListener('click', () => showOpenModal('privileges'));
 openItemsBtn.addEventListener('click', () => showOpenModal('items'));
-  // ==== АПГРЕЙДЕР ====
-function openUpgrader() {
-  upgraderYourItem = null;
-  upgraderTargetItem = null;
-  upgraderChance.textContent = 'Выбери предметы';
-  upgraderResult.textContent = '';
-  upgraderResult.style.color = '#ffd700';
-  upgraderWheelWrap.classList.remove('active');
-  upgraderTrack.innerHTML = '';
-  upgraderSpinBtn.disabled = true;
-  upgraderSpinBtn.textContent = 'Крутить';
-  upgraderOverlay.classList.add('active');
-  renderUpgraderLists();
-}
-
-function closeUpgrader() {
-  upgraderOverlay.classList.remove('active');
-}
-
-function renderUpgraderLists() {
-  upgraderYourList.innerHTML = '';
-  const allMine = [];
-
-  privilegeInventory.forEach(p => allMine.push({ ...p, count: 1 }));
-  itemInventory.forEach(p => allMine.push({ ...p, count: p.count }));
-
-  allMine.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'upgrader-item';
-
-    let disabled = false;
-    if (item.type === 'privilege' && privilegeInventory.length === 1) {
-      disabled = true;
-    }
-
-    if (disabled) div.classList.add('disabled');
-    if (upgraderYourItem && upgraderYourItem.name === item.name) {
-      div.classList.add('selected');
-    }
-
-    let icon;
-    if (item.img) {
-      icon = `<img src="${item.img}" alt="${item.name}">`;
-    } else {
       icon = `<div class="emoji">${item.emoji}</div>`;
     }
 
@@ -1970,6 +1926,376 @@ sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
   item.addEventListener('click', (e) => {
     e.stopPropagation();
     const filter = item.dataset.filter;
+// ==== АПГРЕЙДЕР ====
+function openUpgrader() {
+  upgraderYourItem = null;
+  upgraderTargetItem = null;
+  upgraderChance.textContent = 'Выбери предметы';
+  upgraderResult.textContent = '';
+  upgraderResult.style.color = '#ffd700';
+  upgraderWheelWrap.classList.remove('active');
+  upgraderTrack.innerHTML = '';
+  upgraderSpinBtn.disabled = true;
+  upgraderSpinBtn.textContent = 'Крутить';
+  upgraderOverlay.classList.add('active');
+  renderUpgraderLists();
+}
+
+function closeUpgrader() {
+  upgraderOverlay.classList.remove('active');
+}
+
+function renderUpgraderLists() {
+  upgraderYourList.innerHTML = '';
+  const allMine = [];
+
+  privilegeInventory.forEach(p => allMine.push({ ...p, count: 1 }));
+  itemInventory.forEach(p => allMine.push({ ...p, count: p.count }));
+
+  allMine.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-item';
+
+    let disabled = false;
+    if (item.type === 'privilege' && privilegeInventory.length === 1) {
+      disabled = true;
+    }
+
+    if (disabled) div.classList.add('disabled');
+    if (upgraderYourItem && upgraderYourItem.name === item.name) {
+      div.classList.add('selected');
+    }
+
+    let icon;
+    if (item.img) {
+      icon = `<img src="${item.img}" alt="${item.name}">`;
+    } else {
+      icon = `<div class="emoji">${item.emoji}</div>`;
+    }
+
+    div.innerHTML = `
+      ${icon}
+      <div class="item-name" style="color: ${item.color}">${item.name}</div>
+      <div class="item-count">${item.count > 1 ? 'x' + item.count : ''}</div>
+    `;
+
+    if (!disabled) {
+      div.addEventListener('click', () => {
+        if (upgraderSpinning) return;
+        upgraderYourItem = item;
+        renderUpgraderLists();
+        updateUpgraderChance();
+      });
+    }
+
+    upgraderYourList.appendChild(div);
+  });
+
+  upgraderTargetList.innerHTML = '';
+
+  ALL_ITEMS.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-item';
+
+    let disabled = false;
+    if (upgraderYourItem && upgraderYourItem.name === item.name) {
+      disabled = true;
+    }
+    if (item.type === 'privilege' && privilegeInventory.some(p => p.name === item.name)) {
+      disabled = true;
+    }
+
+    if (disabled) div.classList.add('disabled');
+    if (upgraderTargetItem && upgraderTargetItem.name === item.name) {
+      div.classList.add('selected');
+    }
+
+    let icon;
+    if (item.img) {
+      icon = `<img src="${item.img}" alt="${item.name}">`;
+    } else {
+      icon = `<div class="emoji">${item.emoji}</div>`;
+    }
+
+    div.innerHTML = `
+      ${icon}
+      <div class="item-name" style="color: ${item.color}">${item.name}</div>
+    `;
+
+    if (!disabled) {
+      div.addEventListener('click', () => {
+        if (upgraderSpinning) return;
+        upgraderTargetItem = item;
+        renderUpgraderLists();
+        updateUpgraderChance();
+      });
+    }
+
+    upgraderTargetList.appendChild(div);
+  });
+}
+
+function calcUpgradeChance(yourPoints, targetPoints) {
+  if (!yourPoints || !targetPoints) return 0;
+  let chance = (yourPoints / targetPoints) * 100;
+  if (chance > 90) chance = 90;
+  if (chance < 5) chance = 5;
+  return Math.round(chance);
+}
+
+function updateUpgraderChance() {
+  if (!upgraderYourItem || !upgraderTargetItem) {
+    upgraderChance.textContent = 'Выбери предметы';
+    upgraderSpinBtn.disabled = true;
+    return;
+  }
+
+  const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
+  upgraderChance.textContent = `Шанс: ${chance}%`;
+  upgraderSpinBtn.disabled = false;
+}
+
+function startUpgrade() {
+  if (upgraderSpinning) return;
+  if (!upgraderYourItem || !upgraderTargetItem) return;
+
+  upgraderSpinning = true;
+  upgraderSpinBtn.disabled = true;
+  upgraderResult.textContent = '';
+
+  const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
+  const success = Math.random() * 100 < chance;
+
+  // Сразу применяем результат (без ожидания анимации)
+  // Это защищает от обновления страницы и продажи во время анимации
+  applyUpgradeResult(success);
+
+  upgraderTrack.innerHTML = '';
+  upgraderTrack.style.transition = 'none';
+  upgraderTrack.style.transform = 'translateX(0)';
+  upgraderWheelWrap.classList.add('active');
+
+  const items = [];
+
+  for (let i = 0; i < 20; i++) {
+    items.push(Math.random() < 0.5 ? 'win' : 'lose');
+  }
+
+  items.push(success ? 'win' : 'lose');
+
+  for (let i = 0; i < 20; i++) {
+    items.push(Math.random() < 0.5 ? 'win' : 'lose');
+  }
+
+  const winIndex = 20;
+  const ITEM_W = 120;
+
+  items.forEach(type => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-wheel-item';
+
+    if (type === 'win') {
+      div.style.color = '#4fc3f7';
+      div.innerHTML = `<div class="emoji">💎</div><div>УСПЕХ</div>`;
+    } else {
+      div.style.color = '#f44336';
+      div.innerHTML = `<div class="emoji">💔</div><div>ПРОВАЛ</div>`;
+    }
+
+    upgraderTrack.appendChild(div);
+  });
+
+  const wrapWidth = upgraderWheelWrap.offsetWidth;
+  const centerOffset = wrapWidth / 2;
+  const targetX = -(winIndex * ITEM_W + ITEM_W / 2 - centerOffset);
+
+  setTimeout(() => {
+    upgraderTrack.style.transition = 'transform 7000ms cubic-bezier(0.15, 0.85, 0.3, 1)';
+    upgraderTrack.style.transform = `translateX(${targetX}px)`;
+  }, 50);
+
+  // Анимация — 7 секунд, потом показываем результат
+  setTimeout(() => {
+    if (success) {
+      upgraderResult.textContent = `✅ УСПЕХ! Получен: ${upgraderTargetItem ? upgraderTargetItem.name : '—'}`;
+      upgraderResult.style.color = '#4caf50';
+    } else {
+      upgraderResult.textContent = `❌ ПРОВАЛ. Предмет потерян`;
+      upgraderResult.style.color = '#f44336';
+    }
+
+    upgraderYourItem = null;
+    upgraderTargetItem = null;
+    upgraderChance.textContent = 'Выбери предметы';
+    renderUpgraderLists();
+
+    upgraderSpinning = false;
+    upgraderSpinBtn.disabled = true;
+    upgraderSpinBtn.textContent = 'Крутить';
+  }, 7200);
+}
+
+function applyUpgradeResult(success) {
+  // Применяем результат сразу
+  if (success) {
+    removeFromInventory(upgraderYourItem);
+
+    if (upgraderTargetItem.type === 'privilege') {
+      addPrivilegeToInventory(upgraderTargetItem);
+    } else {
+      addItemToInventory(upgraderTargetItem);
+    }
+  } else {
+    removeFromInventory(upgraderYourItem);
+  }
+
+  recalcBestTitle();
+
+  renderInventory();
+  renderLeaders();
+  saveAccount();
+}
+
+function removeFromInventory(item) {
+  if (item.type === 'privilege') {
+    privilegeInventory = privilegeInventory.filter(p => p.name !== item.name);
+  } else {
+    const found = itemInventory.find(p => p.name === item.name);
+    if (found) {
+      found.count--;
+      if (found.count <= 0) {
+        itemInventory = itemInventory.filter(p => p.name !== item.name);
+      }
+    }
+  }
+}
+
+function recalcBestTitle() {
+  if (privilegeInventory.length === 0) {
+    bestTitle = null;
+    updateTitle();
+    return;
+  }
+
+  let best = null;
+  let bestIdx = -1;
+  privilegeInventory.forEach(p => {
+    const idx = RARITY_ORDER.indexOf(p.name);
+    if (idx > bestIdx) {
+      bestIdx = idx;
+      best = p;
+    }
+  });
+
+  bestTitle = best;
+  updateTitle();
+}
+
+// ==== ЗАЩИТА ОТ ПРОДАЖИ ВО ВРЕМЯ АНИМАЦИИ ====
+// Переопределяем обработчики sell-btn и trade-btn
+// Но проще — блокировать их в renderInventory при upgraderSpinning
+
+// ==== ОБРАБОТЧИКИ АПГРЕЙДЕРА ====
+upgraderBtn.addEventListener('click', openUpgrader);
+upgraderCloseBtn.addEventListener('click', closeUpgrader);
+upgraderSpinBtn.addEventListener('click', startUpgrade);
+
+upgraderOverlay.addEventListener('click', (e) => {
+  if (e.target === upgraderOverlay && !upgraderSpinning) {
+    closeUpgrader();
+  }
+});
+
+// ==== ВВОД НИКА И ПАРОЛЯ ====
+function checkInputs() {
+  nicknameBtn.disabled = !(nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0);
+}
+
+nicknameInput.addEventListener('input', checkInputs);
+passwordInput.addEventListener('input', checkInputs);
+
+nicknameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !nicknameBtn.disabled) {
+    nicknameBtn.click();
+  }
+});
+passwordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !nicknameBtn.disabled) {
+    nicknameBtn.click();
+  }
+});
+
+nicknameBtn.addEventListener('click', () => {
+  const nick = nicknameInput.value.trim();
+  const pass = passwordInput.value;
+  if (!nick || !pass) return;
+
+  const result = loadAccount(nick, pass);
+
+  if (result === 'wrongpass') {
+    nicknameError.textContent = 'Неверный пароль!';
+    return;
+  }
+
+  if (result === 'new') {
+    const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+    accounts[nick] = {
+      password: pass,
+      balance: START_BALANCE,
+      diamonds: START_DIAMONDS,
+      privilegeInventory: [],
+      itemInventory: [],
+      bestTitle: null,
+      totalOpened: 0,
+      totalSpentDiamonds: 0,
+      totalSpentCoins: 0
+    };
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+  }
+
+  playerNick = nick;
+  playerNickEl.textContent = playerNick;
+  nicknameOverlay.classList.add('hidden');
+  nicknameError.textContent = '';
+
+  updateBalance();
+  updateTitle();
+  renderInventory();
+  renderLeaders();
+});
+
+// ==== ТРЕЙДЫ (заглушка) ====
+tradeBtn.addEventListener('click', () => {
+  alert('Трейды пока в разработке');
+});
+
+// ==== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ====
+const hotbarBtns = document.querySelectorAll('.hotbar-btn');
+const tabSections = document.querySelectorAll('.tab-section');
+
+hotbarBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+
+    hotbarBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    tabSections.forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+// ==== СОРТИРОВКА ====
+sortBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  sortMenu.classList.toggle('open');
+  sortBtn.classList.toggle('open');
+});
+
+sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const filter = item.dataset.filter;
 
     sortMenu.querySelectorAll('.sort-menu-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
@@ -2000,7 +2326,3 @@ updateTitle();
 renderInventory();
 renderLeaders();
 startIncome();
-</script>
-
-</body>
-</html>

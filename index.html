@@ -1019,8 +1019,8 @@
     <button class="upgrader-spin-btn" id="upgraderSpinBtn" disabled>Крутить</button>
     <button class="upgrader-close-btn" id="upgraderCloseBtn">Закрыть</button>
   </div>
-</div>
-<script>
+ </div>
+ <script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
@@ -1612,7 +1612,8 @@ function startSpin(currency) {
 function closeModal() {
   modalOverlay.classList.remove('active');
 }
- // ==== ОБРАБОТЧИКИ КНОПОК КЕЙСОВ (ВАЖНО!) ====
+
+// ==== ОБРАБОТЧИКИ КНОПОК КЕЙСОВ ====
 openBtn.addEventListener('click', () => showOpenModal('privileges'));
 openItemsBtn.addEventListener('click', () => showOpenModal('items'));
 
@@ -1756,7 +1757,6 @@ function startUpgrade() {
   const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
   const success = Math.random() * 100 < chance;
 
-  // Результат применяется сразу — защита от обновления страницы и продажи
   applyUpgradeResult(success);
 
   upgraderTrack.innerHTML = '';
@@ -1889,13 +1889,19 @@ upgraderOverlay.addEventListener('click', (e) => {
   }
 });
 
-// ==== ВВОД НИКА И ПАРОЛЯ ====
+// ==== ВВОД НИКА И ПАРОЛЯ (ИСПРАВЛЕНО) ====
 function checkInputs() {
-  nicknameBtn.disabled = !(nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0);
+  if (!nicknameBtn || !nicknameInput || !passwordInput) return;
+  const ok = nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0;
+  nicknameBtn.disabled = !ok;
 }
 
 nicknameInput.addEventListener('input', checkInputs);
+nicknameInput.addEventListener('keyup', checkInputs);
+nicknameInput.addEventListener('change', checkInputs);
 passwordInput.addEventListener('input', checkInputs);
+passwordInput.addEventListener('keyup', checkInputs);
+passwordInput.addEventListener('change', checkInputs);
 
 nicknameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !nicknameBtn.disabled) {
@@ -1946,6 +1952,9 @@ nicknameBtn.addEventListener('click', () => {
   renderInventory();
   renderLeaders();
 });
+
+// сразу проверяем состояние кнопки при загрузке
+checkInputs();
 
 // ==== ТРЕЙДЫ (заглушка) ====
 tradeBtn.addEventListener('click', () => {
@@ -2009,3 +2018,4 @@ updateTitle();
 renderInventory();
 renderLeaders();
 startIncome();
+ </script>

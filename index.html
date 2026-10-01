@@ -1019,8 +1019,8 @@
     <button class="upgrader-spin-btn" id="upgraderSpinBtn" disabled>Крутить</button>
     <button class="upgrader-close-btn" id="upgraderCloseBtn">Закрыть</button>
   </div>
-         </div>
-         <script>
+</div>
+<script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
@@ -1612,7 +1612,11 @@ function startSpin(currency) {
 function closeModal() {
   modalOverlay.classList.remove('active');
 }
-          // ==== АПГРЕЙДЕР ====
+ // ==== ОБРАБОТЧИКИ КНОПОК КЕЙСОВ (ВАЖНО!) ====
+openBtn.addEventListener('click', () => showOpenModal('privileges'));
+openItemsBtn.addEventListener('click', () => showOpenModal('items'));
+
+// ==== АПГРЕЙДЕР ====
 function openUpgrader() {
   upgraderYourItem = null;
   upgraderTargetItem = null;
@@ -1752,8 +1756,7 @@ function startUpgrade() {
   const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
   const success = Math.random() * 100 < chance;
 
-  // Сразу применяем результат (без ожидания анимации)
-  // Это защищает от обновления страницы и продажи во время анимации
+  // Результат применяется сразу — защита от обновления страницы и продажи
   applyUpgradeResult(success);
 
   upgraderTrack.innerHTML = '';
@@ -1800,7 +1803,6 @@ function startUpgrade() {
     upgraderTrack.style.transform = `translateX(${targetX}px)`;
   }, 50);
 
-  // Анимация — 7 секунд, потом показываем результат
   setTimeout(() => {
     if (success) {
       upgraderResult.textContent = `✅ УСПЕХ! Получен: ${upgraderTargetItem ? upgraderTargetItem.name : '—'}`;
@@ -1822,7 +1824,6 @@ function startUpgrade() {
 }
 
 function applyUpgradeResult(success) {
-  // Применяем результат сразу
   if (success) {
     removeFromInventory(upgraderYourItem);
 
@@ -1876,10 +1877,6 @@ function recalcBestTitle() {
   bestTitle = best;
   updateTitle();
 }
-
-// ==== ЗАЩИТА ОТ ПРОДАЖИ ВО ВРЕМЯ АНИМАЦИИ ====
-// Переопределяем обработчики sell-btn и trade-btn
-// Но проще — блокировать их в renderInventory при upgraderSpinning
 
 // ==== ОБРАБОТЧИКИ АПГРЕЙДЕРА ====
 upgraderBtn.addEventListener('click', openUpgrader);

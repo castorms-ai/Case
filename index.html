@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Кейсы</title>
+<title>Dota 2 Кейсы</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -482,8 +482,8 @@
     background: rgba(60, 40, 20, 0.75);
     box-shadow: 0 0 35px #7b2fff88;
   }
-
-  .hotbar {
+   </style>
+     .hotbar {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -874,6 +874,113 @@
     object-fit: contain;
     margin-bottom: 4px;
   }
+
+  /* ==== РУДНИК ==== */
+  .mine-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+    padding: 15px;
+    overflow-y: auto;
+  }
+  .mine-overlay.active { display: flex; }
+  .mine-modal {
+    width: 100%;
+    max-width: 800px;
+    background: #0a0a12;
+    border: 4px solid #7b2fff;
+    border-radius: 24px;
+    padding: 25px 20px;
+    box-shadow: 0 0 60px #7b2fff88;
+  }
+  .mine-title {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #fff;
+    text-shadow: 0 0 20px #7b2fff;
+  }
+  .mine-time {
+    text-align: center;
+    font-size: 22px;
+    color: #ffd700;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  .mine-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .mine-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border: 3px solid #7b2fff55;
+    border-radius: 14px;
+    background: #000000;
+    font-size: 20px;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  .mine-row.claimed {
+    border-color: #4caf50;
+    background: rgba(76, 175, 80, 0.15);
+    opacity: 0.7;
+  }
+  .mine-row.available {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px #ffd70055;
+  }
+  .mine-row .mine-time-label {
+    color: #aaa;
+    width: 100px;
+  }
+  .mine-row .mine-reward {
+    flex: 1;
+    color: #fff;
+    padding-left: 15px;
+  }
+  .mine-row .mine-claim-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #ffd700;
+    color: #000;
+    transition: 0.2s;
+  }
+  .mine-row .mine-claim-btn:hover { background: #ffe94a; }
+  .mine-row .mine-claim-btn:disabled {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+  }
+  .mine-close-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #444;
+    color: #fff;
+    transition: 0.2s;
+  }
+  .mine-close-btn:hover { background: #666; }
 </style>
 </head>
 <body>
@@ -905,7 +1012,7 @@
   <h1>🎁 КЕЙСЫ</h1>
   <div class="cases-grid">
     <div class="case-card" id="startCase">
-      <div class="case-name">ПРИВИЛЕГИИ</div>
+      <div class="case-name">КЕЙС РАНГОВ</div>
       <div class="case-chest">
         <img src="https://avatars.mds.yandex.net/i?id=16441afe08ac42fc9e55b55df43ff7f4a4803992-4525867-images-thumbs&n=13" alt="chest">
       </div>
@@ -942,7 +1049,7 @@
     <div class="sort-menu" id="sortMenu">
       <div class="sort-menu-item active" data-filter="all">Все</div>
       <div class="sort-menu-item" data-filter="items">Предметы</div>
-      <div class="sort-menu-item" data-filter="privileges">Привилегии</div>
+      <div class="sort-menu-item" data-filter="privileges">Ранги</div>
     </div>
   </div>
   <h1 style="margin-top: 110px;">🎒 ИНВЕНТАРЬ</h1>
@@ -966,6 +1073,7 @@
     </div>
   </div>
 
+  <button class="profile-trade-btn" id="mineBtn">⛏️ Рудник ⛏️</button>
   <button class="profile-trade-btn" id="tradeBtn">🤝 Обмен 🤝</button>
   <button class="profile-trade-btn" id="upgraderBtn">⬆️ Апгрейдер ⬆️</button>
 </div>
@@ -1019,8 +1127,17 @@
     <button class="upgrader-spin-btn" id="upgraderSpinBtn" disabled>Крутить</button>
     <button class="upgrader-close-btn" id="upgraderCloseBtn">Закрыть</button>
   </div>
- </div>
- <script>
+</div>
+
+<div class="mine-overlay" id="mineOverlay">
+  <div class="mine-modal">
+    <div class="mine-title">⛏️ РУДНИК ⛏️</div>
+    <div class="mine-time" id="mineTime">Сегодня: 0 мин</div>
+    <div class="mine-list" id="mineList"></div>
+    <button class="mine-close-btn" id="mineCloseBtn">Закрыть</button>
+  </div>
+   </div>
+   <script>
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
@@ -1031,77 +1148,191 @@ const ITEM_WIDTH = 150;
 const SPIN_DURATION = 15000;
 const EXTRA_ITEMS = 50;
 
+// ==== РАНГИ DOTA 2 ====
 const PRIVILEGES = [
-  { name: 'Нуб',            chance: 55,   color: '#888888', emoji: '🍞', type: 'privilege',
-    points: 2,
-    onlineIncome: 10, onlineDiamondIncome: 5,
-    img: 'https://avatars.mds.yandex.net/i?id=b686e31918b27298a31bf560b465f3cac54e3a2c-5291569-images-thumbs&n=13' },
-  { name: 'Герой',          chance: 30,   color: '#4caf50', emoji: '🟢', type: 'privilege',
-    points: 4,
-    onlineIncome: 15, onlineDiamondIncome: 5,
-    img: 'https://avatars.mds.yandex.net/i?id=ef6310ef0ec2848cfe738b4c24cd5c7d7ed2f4d6-5514587-images-thumbs&n=13' },
-  { name: 'Принц',          chance: 8,    color: '#2196f3', emoji: '🔵', type: 'privilege',
-    points: 6,
-    onlineIncome: 20, onlineDiamondIncome: 5,
-    img: 'https://avatars.mds.yandex.net/i?id=e97e19bd0ebea0b182a513fb6d824812517e6471-5482565-images-thumbs&ref=rim&n=33&w=480&h=480' },
-  { name: 'Владыка',        chance: 4,    color: '#9c27b0', emoji: '🟣', type: 'privilege',
-    points: 10,
-    onlineIncome: 30, onlineDiamondIncome: 5,
-    img: 'https://avatars.mds.yandex.net/i?id=37dc5ea389f25277820254a75b11676ff6e5046c-10804794-images-thumbs&n=13' },
-  { name: 'Король мертвых', chance: 2,    color: '#ff9800', emoji: '🟠', type: 'privilege',
-    points: 30,
-    onlineIncome: 50, onlineDiamondIncome: 5,
-    img: 'https://avatars.mds.yandex.net/i?id=097723617623703de1728fa925e3f52f34b54e68-7016633-images-thumbs&n=13' },
-  { name: 'Титан',          chance: 0.8,  color: '#f44336', emoji: '🔴', type: 'privilege',
-    points: 75,
-    onlineIncome: 70, onlineDiamondIncome: 5,
-    img: 'https://avatars.mds.yandex.net/i?id=242096d8394bc312d9452d3d5b3e9fc4dab529ff-5236860-images-thumbs&n=13' },
-  { name: 'VIP',            chance: 0.2,  color: '#ffd700', emoji: '👑', type: 'privilege',
-    points: 150,
-    onlineIncome: 100, onlineDiamondIncome: 10,
-    img: 'https://avatars.mds.yandex.net/i?id=0e93523aa2d14b3dfa5c6c22a723a8edd7a3f067-9215166-images-thumbs&n=13' },
+  { name: 'Рекрут',    chance: 40,   color: '#8B7355', emoji: '🛡️', type: 'privilege',
+    points: 2,   onlineIncome: 10,  onlineDiamondIncome: 5,  img: '' },
+  { name: 'Страж',     chance: 25,   color: '#4caf50', emoji: '🟢', type: 'privilege',
+    points: 5,   onlineIncome: 15,  onlineDiamondIncome: 5,  img: '' },
+  { name: 'Рыцарь',    chance: 15,   color: '#2196f3', emoji: '🔵', type: 'privilege',
+    points: 10,  onlineIncome: 20,  onlineDiamondIncome: 5,  img: '' },
+  { name: 'Герой',     chance: 10,   color: '#00bcd4', emoji: '🌀', type: 'privilege',
+    points: 20,  onlineIncome: 30,  onlineDiamondIncome: 5,  img: '' },
+  { name: 'Легенда',   chance: 5,    color: '#9c27b0', emoji: '🟣', type: 'privilege',
+    points: 40,  onlineIncome: 50,  onlineDiamondIncome: 5,  img: '' },
+  { name: 'Властелин', chance: 3,    color: '#f44336', emoji: '🔴', type: 'privilege',
+    points: 75,  onlineIncome: 70,  onlineDiamondIncome: 5,  img: '' },
+  { name: 'Божество',  chance: 1.5,  color: '#ffd700', emoji: '👑', type: 'privilege',
+    points: 120, onlineIncome: 90,  onlineDiamondIncome: 10, img: '' },
+  { name: 'Титан',     chance: 0.5,  color: '#ff5722', emoji: '🔥', type: 'privilege',
+    points: 200, onlineIncome: 120, onlineDiamondIncome: 15, img: '' },
 ];
 
+// ==== ПРЕДМЕТЫ DOTA 2 ====
 const ITEMS = [
-  { name: 'Железная лопата', chance: 18,   color: '#aaaaaa', emoji: '🪓', type: 'item',
-    points: 1,
-    sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
-    img: 'https://avatars.mds.yandex.net/i?id=e47a5761c618adf8f34fe1a4230b5a09fad64920-9224539-images-thumbs&n=13' },
-  { name: 'Железный топор',  chance: 18,   color: '#aaaaaa', emoji: '🪓', type: 'item',
-    points: 1,
-    sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0 },
-  { name: 'Железная кирка',  chance: 18,   color: '#aaaaaa', emoji: '⛏️', type: 'item',
-    points: 1,
-    sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0 },
-  { name: 'Алмазная лопата', chance: 12,   color: '#4fc3f7', emoji: '🪓', type: 'item',
-    points: 3,
-    sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
-    img: 'https://avatars.mds.yandex.net/i?id=3119864992466f0b6debff283cd8f883a21b7b26-7086351-images-thumbs&n=13' },
-  { name: 'Алмазный топор',  chance: 12,   color: '#4fc3f7', emoji: '🪓', type: 'item',
-    points: 3,
-    sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
-    img: 'https://avatars.mds.yandex.net/i?id=0c232fff1e410ed63535b29933671b71df26b5e1-5743679-images-thumbs&n=13' },
-  { name: 'Алмазная кирка',  chance: 12,   color: '#4fc3f7', emoji: '⛏️', type: 'item',
-    points: 3,
-    sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
-    img: 'https://avatars.mds.yandex.net/i?id=735b7a08ce4747110e504ea50787d87dd53eaf15-12154386-images-thumbs&n=13' },
-  { name: 'Лопата титана',   chance: 3.5,  color: '#7b2fff', emoji: '🪓', type: 'item',
-    points: 30,
-    sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
-    img: 'https://avatars.mds.yandex.net/i?id=265a4f87aebebf821650cba6cfe23931883c41da-5340698-images-thumbs&n=13' },
-  { name: 'Топор титана',    chance: 3.5,  color: '#7b2fff', emoji: '🪓', type: 'item',
-    points: 30,
-    sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
-    img: 'https://avatars.mds.yandex.net/i?id=7146573a9529f0f629f9a3a1667c88c8_l-5232506-images-thumbs&ref=rim&n=13&w=900&h=900' },
-  { name: 'Кирка титана',    chance: 3,    color: '#7b2fff', emoji: '⛏️', type: 'item',
-    points: 30,
-    sellPriceCoins: 200, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
-    img: 'https://avatars.mds.yandex.net/i?id=b6bb765877ca1d5fa58ca52ccaa14cc08749c723-5884528-images-thumbs&n=13' },
+  // ОБЫЧНЫЕ (40% / 6 = 6.667%)
+  { name: 'Танго', chance: 6.667, color: '#ffffff', emoji: '🍃', type: 'item',
+    points: 1, sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/tango.webp?1790601790' },
+  { name: 'Лечебный бальзам', chance: 6.667, color: '#ffffff', emoji: '🧪', type: 'item',
+    points: 1, sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/healing_salve.webp?1790598615' },
+  { name: 'Ясность', chance: 6.667, color: '#ffffff', emoji: '💧', type: 'item',
+    points: 1, sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/clarity.webp?1790596388' },
+  { name: 'Туфельки ловкости', chance: 6.667, color: '#ffffff', emoji: '👟', type: 'item',
+    points: 1, sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/slippers_of_agility.webp?1760186292' },
+  { name: 'Железная ветка', chance: 6.667, color: '#ffffff', emoji: '🌿', type: 'item',
+    points: 1, sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/iron_branch.webp?1765966647' },
+  { name: 'Топор для рубки', chance: 6.665, color: '#ffffff', emoji: '🪓', type: 'item',
+    points: 1, sellPriceCoins: 50, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/quelling_blade.webp?1790827788' },
+
+  // НЕОБЫЧНЫЕ (30% / 9 = 3.333%)
+  { name: 'Корона', chance: 3.333, color: '#4fc3f7', emoji: '👑', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/crown.webp?1760188468' },
+  { name: 'Диадема', chance: 3.333, color: '#4fc3f7', emoji: '💎', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/diadem.webp?1760191925' },
+  { name: 'Бутыль', chance: 3.333, color: '#4fc3f7', emoji: '🍶', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/bottle.webp?1790599268' },
+  { name: 'Силовые ботинки', chance: 3.333, color: '#4fc3f7', emoji: '🥾', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/power_treads.webp?1760616223' },
+  { name: 'Плащ', chance: 3.333, color: '#4fc3f7', emoji: '🧥', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/cloak.webp?1774410457' },
+  { name: 'Клинок проворства', chance: 3.333, color: '#4fc3f7', emoji: '🗡️', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/blade_of_alacrity.webp?1760189027' },
+  { name: 'Ветряные шнурки', chance: 3.333, color: '#4fc3f7', emoji: '🎐', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/wind_lace.webp?1760429000' },
+  { name: 'Магическая палочка', chance: 3.333, color: '#4fc3f7', emoji: '🪄', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/magic_stick.webp?1760427442' },
+  { name: 'Ботинки скорости', chance: 3.336, color: '#4fc3f7', emoji: '👢', type: 'item',
+    points: 3, sellPriceCoins: 70, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/boots_of_speed.webp?1760429728' },
+
+  // РЕДКИЕ (20% / 8 = 2.5%)
+  { name: 'Энергетический ускоритель', chance: 2.5, color: '#1565c0', emoji: '⚡', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/energy_booster.webp?1730368679' },
+  { name: 'Точечный ускоритель', chance: 2.5, color: '#1565c0', emoji: '🔵', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/point_booster.webp?1673180350' },
+  { name: 'Кольцо здоровья', chance: 2.5, color: '#1565c0', emoji: '💍', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/ring_of_health.webp?1774411450' },
+  { name: 'Кольчужная броня', chance: 2.5, color: '#1565c0', emoji: '🛡️', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/blade_mail.webp?1774418229' },
+  { name: 'Спокойные ботинки', chance: 2.5, color: '#1565c0', emoji: '🥿', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/tranquil_boots.webp?1761119428' },
+  { name: 'Кольцо Базилиуса', chance: 2.5, color: '#1565c0', emoji: '💠', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/ring_of_basilius.webp?1761111541' },
+  { name: 'Шляпа волшебника', chance: 2.5, color: '#1565c0', emoji: '🎩', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/wizard_hat.webp?1777549129' },
+  { name: 'Кольцо регенерации', chance: 2.5, color: '#1565c0', emoji: '💍', type: 'item',
+    points: 8, sellPriceCoins: 100, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/ring_of_regen.webp?1760425063' },
+
+  // ЭПИЧЕСКИЕ (9.5% / 20 = 0.475%)
+  { name: 'Blink Dagger', chance: 0.475, color: '#9c27b0', emoji: '🗡️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/blink_dagger.webp?1760612665' },
+  { name: 'Сатаник', chance: 0.475, color: '#9c27b0', emoji: '🩸', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/satanic.webp?1789724783' },
+  { name: 'Кираса агрессии', chance: 0.475, color: '#9c27b0', emoji: '🛡️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/assault_cuirass.webp?1762419606' },
+  { name: 'Сердце Тарраска', chance: 0.475, color: '#9c27b0', emoji: '❤️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/heart_of_tarrasque.webp?1789724208' },
+  { name: 'Black King Bar', chance: 0.475, color: '#9c27b0', emoji: '🖤', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/black_king_bar.webp?1775717555' },
+  { name: 'Aegis of the Immortal', chance: 0.475, color: '#9c27b0', emoji: '🛡️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/aegis_of_the_immortal.webp?1732972128' },
+  { name: 'Маска безумия', chance: 0.475, color: '#9c27b0', emoji: '🎭', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/mask_of_madness.webp?1789724565' },
+  { name: 'Рука Мидаса', chance: 0.475, color: '#9c27b0', emoji: '🖐️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/hand_of_midas.webp?1785732566' },
+  { name: 'Boots of Travel 2', chance: 0.475, color: '#9c27b0', emoji: '🥾', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/boots_of_travel_2.webp?1760621821' },
+  { name: 'Boots of Travel', chance: 0.475, color: '#9c27b0', emoji: '👢', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/boots_of_travel.webp?1760621840' },
+  { name: 'Дагон', chance: 0.475, color: '#9c27b0', emoji: '🔴', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/dagon.webp?1780646642' },
+  { name: 'Refresher Orb', chance: 0.475, color: '#9c27b0', emoji: '🔮', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/refresher_orb.webp?1774427226' },
+  { name: 'Eul\'s Scepter', chance: 0.475, color: '#9c27b0', emoji: '🌪️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/euls_scepter_of_divinity.webp?1761488037' },
+  { name: 'Daedalus', chance: 0.475, color: '#9c27b0', emoji: '⚔️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/daedalus.webp?1789724052' },
+  { name: 'Butterfly', chance: 0.475, color: '#9c27b0', emoji: '🦋', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/butterfly.webp?1785731455' },
+  { name: 'Radiance', chance: 0.475, color: '#9c27b0', emoji: '☀️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/radiance.webp?1765981229' },
+  { name: 'Bloodthorn', chance: 0.475, color: '#9c27b0', emoji: '🌹', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/bloodthorn.webp?1774425908' },
+  { name: 'Sange and Yasha', chance: 0.475, color: '#9c27b0', emoji: '⚔️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/sange_and_yasha.webp?1775718024' },
+  { name: 'Kaya and Sange', chance: 0.475, color: '#9c27b0', emoji: '⚔️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/kaya_and_sange.webp?1785733728' },
+  { name: 'Yasha and Kaya', chance: 0.475, color: '#9c27b0', emoji: '⚔️', type: 'item',
+    points: 20, sellPriceCoins: 160, sellPriceDiamonds: 0, passiveIncomeCoins: 0, passiveIncomeDiamonds: 0,
+    img: 'https://dota2.ru/img/items/yasha_and_kaya.webp?1785733989' },
+
+  // ЛЕГЕНДАРНЫЕ (0.5% / 3 = 0.1667%)
+  { name: 'Refresher Shard', chance: 0.1667, color: '#f44336', emoji: '💠', type: 'item',
+    points: 50, sellPriceCoins: 250, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
+    img: 'https://dota2.ru/img/items/refresher_shard.webp?1785735293' },
+  { name: 'Сыр', chance: 0.1667, color: '#f44336', emoji: '🧀', type: 'item',
+    points: 50, sellPriceCoins: 250, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
+    img: 'https://dota2.ru/img/items/cheese.webp?1730712335' },
+  { name: 'Aghanim\'s Blessing', chance: 0.1666, color: '#f44336', emoji: '🔮', type: 'item',
+    points: 50, sellPriceCoins: 250, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2,
+    img: 'https://dota2.ru/img/items/aghanims_blessing_rosan.webp?1732972302' },
 ];
 
 const ALL_ITEMS = [...PRIVILEGES, ...ITEMS];
 
-const RARITY_ORDER = ['Нуб', 'Герой', 'Принц', 'Владыка', 'Король мертвых', 'Титан', 'VIP'];
+const RARITY_ORDER = ['Рекрут', 'Страж', 'Рыцарь', 'Герой', 'Легенда', 'Властелин', 'Божество', 'Титан'];
+
+// ==== НАГРАДЫ РУДНИКА ====
+// minutes — сколько минут нужно отсидеть, reward — что даём
+const MINE_REWARDS = [
+  { minutes: 5,    type: 'itemsCase', label: '🎁 Кейс с предметами' },
+  { minutes: 10,   type: 'coins',     value: 200, label: '200 🪙' },
+  { minutes: 30,   type: 'diamonds',  value: 50,  label: '50 💎' },
+  { minutes: 60,   type: 'rankCase',  label: '🎁 Кейс рангов' },
+  { minutes: 120,  type: 'arcanCase', label: '🎁 Кейс Аркан (скоро)' },
+];
+const MINE_HOURLY_REWARD = 500; // после 2 часов — каждый час по 500 монет
 
 // ==== СОСТОЯНИЕ ====
 let balance = START_BALANCE;
@@ -1120,6 +1351,13 @@ let totalSpentCoins = 0;
 let upgraderYourItem = null;
 let upgraderTargetItem = null;
 let upgraderSpinning = false;
+
+// Рудник
+let mineSecondsToday = 0;       // секунд наиграно за сегодня
+let mineClaimed = [];           // массив индексов забранных наград
+let mineLastHourlyClaimed = 0;  // сколько часовых наград после 2ч уже забрано
+let mineDate = '';              // дата последнего сброса (YYYY-MM-DD)
+let mineTickHandle = null;
 
 // ==== ЭЛЕМЕНТЫ ====
 const trackEl       = document.getElementById('rouletteTrack');
@@ -1164,7 +1402,12 @@ const upgraderCloseBtn    = document.getElementById('upgraderCloseBtn');
 const upgraderWheelWrap   = document.getElementById('upgraderWheelWrap');
 const upgraderTrack       = document.getElementById('upgraderTrack');
 
-// ==== ФУНКЦИИ ====
+const mineBtn       = document.getElementById('mineBtn');
+const mineOverlay   = document.getElementById('mineOverlay');
+const mineCloseBtn  = document.getElementById('mineCloseBtn');
+const mineList      = document.getElementById('mineList');
+const mineTime      = document.getElementById('mineTime');
+    // ==== ОБЩИЕ ФУНКЦИИ ====
 function updateBalance() {
   balanceEl.textContent = Math.floor(balance);
   diamondsEl.textContent = Math.floor(diamonds);
@@ -1225,6 +1468,7 @@ function addItemToInventory(prize) {
   return true;
 }
 
+// ==== ИНВЕНТАРЬ ====
 function renderInventory() {
   let filteredPriv = [];
   let filteredItems = [];
@@ -1236,12 +1480,9 @@ function renderInventory() {
     filteredItems = itemInventory;
   }
 
-  if (filteredPriv.length === 0 && filteredItems.length === 0) {
-    inventoryGrid.innerHTML = '';
-    return;
-  }
-
   inventoryGrid.innerHTML = '';
+
+  if (filteredPriv.length === 0 && filteredItems.length === 0) return;
 
   const sortedPriv = [...filteredPriv].sort((a, b) => {
     return RARITY_ORDER.indexOf(b.name) - RARITY_ORDER.indexOf(a.name);
@@ -1250,14 +1491,9 @@ function renderInventory() {
   sortedPriv.forEach(prize => {
     const card = document.createElement('div');
     card.className = 'inv-card';
-
-    let icon;
-    if (prize.img) {
-      icon = `<img src="${prize.img}" alt="${prize.name}">`;
-    } else {
-      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
-    }
-
+    let icon = prize.img
+      ? `<img src="${prize.img}" alt="${prize.name}">`
+      : `<div class="inv-emoji">${prize.emoji}</div>`;
     card.innerHTML = `
       ${icon}
       <div class="inv-name" style="color: ${prize.color}">${prize.name}</div>
@@ -1267,21 +1503,15 @@ function renderInventory() {
   });
 
   const sortedItems = [...filteredItems].sort((a, b) => {
-    const orderA = a.name.includes('титана') ? 3 : a.name.includes('Алмазная') || a.name.includes('Алмазный') ? 2 : 1;
-    const orderB = b.name.includes('титана') ? 3 : b.name.includes('Алмазная') || b.name.includes('Алмазный') ? 2 : 1;
-    return orderB - orderA;
+    return (b.points || 0) - (a.points || 0);
   });
 
   sortedItems.forEach(prize => {
     const card = document.createElement('div');
     card.className = 'inv-card';
-
-    let icon;
-    if (prize.img) {
-      icon = `<img src="${prize.img}" alt="${prize.name}">`;
-    } else {
-      icon = `<div class="inv-emoji">${prize.emoji}</div>`;
-    }
+    let icon = prize.img
+      ? `<img src="${prize.img}" alt="${prize.name}">`
+      : `<div class="inv-emoji">${prize.emoji}</div>`;
 
     let sellButtons = '';
     if (prize.sellPriceDiamonds > 0) {
@@ -1334,6 +1564,7 @@ function renderInventory() {
   });
 }
 
+// ==== ЛИДЕРБОРД ====
 function renderLeaders() {
   const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
   const players = Object.keys(accounts).map(nick => ({
@@ -1375,6 +1606,7 @@ function renderLeaders() {
   });
 }
 
+// ==== ВСПЛЫВАШКА ДОХОДА ====
 function showIncomePopup(amount, currency) {
   const popup = document.createElement('div');
   popup.textContent = `+${amount} ${currency}`;
@@ -1401,11 +1633,10 @@ function showIncomePopup(amount, currency) {
     popup.style.transform = 'translateY(-30px)';
   }, 2000);
 
-  setTimeout(() => {
-    popup.remove();
-  }, 3200);
+  setTimeout(() => popup.remove(), 3200);
 }
 
+// ==== ПАССИВНЫЙ ДОХОД (раз в минуту) ====
 function startIncome() {
   setInterval(() => {
     if (!isOnline) return;
@@ -1446,6 +1677,15 @@ function startIncome() {
   }, 60 * 1000);
 }
 
+// ==== СОХРАНЕНИЕ / ЗАГРУЗКА ====
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function saveAccount() {
   if (!playerNick) return;
   const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
@@ -1458,7 +1698,11 @@ function saveAccount() {
     bestTitle: bestTitle ? bestTitle.name : null,
     totalOpened: totalOpened,
     totalSpentDiamonds: totalSpentDiamonds,
-    totalSpentCoins: totalSpentCoins
+    totalSpentCoins: totalSpentCoins,
+    mineSecondsToday: mineSecondsToday,
+    mineClaimed: mineClaimed,
+    mineLastHourlyClaimed: mineLastHourlyClaimed,
+    mineDate: mineDate
   };
   localStorage.setItem('accounts', JSON.stringify(accounts));
   renderLeaders();
@@ -1468,38 +1712,60 @@ function loadAccount(nick, password) {
   const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
   if (!accounts[nick]) return 'new';
   if (accounts[nick].password !== password) return 'wrongpass';
-  balance = accounts[nick].balance;
-  diamonds = accounts[nick].diamonds;
-  privilegeInventory = (accounts[nick].privilegeInventory || []).map(name => {
+
+  const a = accounts[nick];
+  balance = a.balance ?? START_BALANCE;
+  diamonds = a.diamonds ?? START_DIAMONDS;
+
+  privilegeInventory = (a.privilegeInventory || []).map(name => {
     const p = PRIVILEGES.find(x => x.name === name);
     return p ? { ...p, count: 1 } : null;
   }).filter(Boolean);
-  itemInventory = (accounts[nick].itemInventory || []).map(obj => {
+
+  itemInventory = (a.itemInventory || []).map(obj => {
     const p = ITEMS.find(x => x.name === obj.name);
     return p ? { ...p, count: obj.count } : null;
   }).filter(Boolean);
-  bestTitle = accounts[nick].bestTitle ? PRIVILEGES.find(p => p.name === accounts[nick].bestTitle) : null;
-  totalOpened = accounts[nick].totalOpened || 0;
-  totalSpentDiamonds = accounts[nick].totalSpentDiamonds || 0;
-  totalSpentCoins = accounts[nick].totalSpentCoins || 0;
+
+  bestTitle = a.bestTitle ? PRIVILEGES.find(p => p.name === a.bestTitle) : null;
+  totalOpened = a.totalOpened || 0;
+  totalSpentDiamonds = a.totalSpentDiamonds || 0;
+  totalSpentCoins = a.totalSpentCoins || 0;
+
+  // Рудник
+  mineDate = a.mineDate || todayStr();
+  mineSecondsToday = a.mineSecondsToday || 0;
+  mineClaimed = a.mineClaimed || [];
+  mineLastHourlyClaimed = a.mineLastHourlyClaimed || 0;
+
+  if (mineDate !== todayStr()) {
+    mineDate = todayStr();
+    mineSecondsToday = 0;
+    mineClaimed = [];
+    mineLastHourlyClaimed = 0;
+  }
+
   return 'ok';
 }
 
+// ==== КЕЙСЫ ====
 let currentPrizeList = PRIVILEGES;
 let currentCaseType = 'privileges';
 
-function showOpenModal(caseType) {
+function showOpenModal(caseType, free = false) {
   currentCaseType = caseType;
   currentPrizeList = caseType === 'privileges' ? PRIVILEGES : ITEMS;
 
-  modalTitle.textContent = caseType === 'privileges' ? 'ПРИВИЛЕГИИ' : 'КЕЙС С ПРЕДМЕТАМИ';
+  modalTitle.textContent = caseType === 'privileges' ? 'КЕЙС РАНГОВ' : 'КЕЙС С ПРЕДМЕТАМИ';
   modalOverlay.classList.add('active');
   modalResult.textContent = '';
   modalClose.classList.remove('active');
   priceChoice.style.display = 'none';
   wrapEl.style.display = 'none';
 
-  if (caseType === 'items') {
+  if (free) {
+    startSpin('free');
+  } else if (caseType === 'items') {
     priceChoice.style.display = 'flex';
   } else {
     startSpin('diamonds');
@@ -1532,7 +1798,7 @@ function startSpin(currency) {
   if (isOpening) return;
   isOpening = true;
 
-  if (currentCaseType === 'privileges') {
+  if (currency === 'diamonds' && currentCaseType === 'privileges') {
     if (diamonds < PRIVILEGE_CASE_PRICE_DIAMONDS) {
       modalResult.textContent = 'Недостаточно алмазов!';
       modalResult.style.color = '#f44336';
@@ -1592,9 +1858,7 @@ function startSpin(currency) {
       }
 
       const added = addPrivilegeToInventory(winPrize);
-      if (!added) {
-        modalResult.textContent = winPrize.name + ' (уже есть)';
-      }
+      if (!added) modalResult.textContent = winPrize.name + ' (уже есть)';
     } else {
       addItemToInventory(winPrize);
     }
@@ -1613,7 +1877,6 @@ function closeModal() {
   modalOverlay.classList.remove('active');
 }
 
-// ==== ОБРАБОТЧИКИ КНОПОК КЕЙСОВ ====
 openBtn.addEventListener('click', () => showOpenModal('privileges'));
 openItemsBtn.addEventListener('click', () => showOpenModal('items'));
 
@@ -1648,21 +1911,14 @@ function renderUpgraderLists() {
     div.className = 'upgrader-item';
 
     let disabled = false;
-    if (item.type === 'privilege' && privilegeInventory.length === 1) {
-      disabled = true;
-    }
+    if (item.type === 'privilege' && privilegeInventory.length === 1) disabled = true;
 
     if (disabled) div.classList.add('disabled');
-    if (upgraderYourItem && upgraderYourItem.name === item.name) {
-      div.classList.add('selected');
-    }
+    if (upgraderYourItem && upgraderYourItem.name === item.name) div.classList.add('selected');
 
-    let icon;
-    if (item.img) {
-      icon = `<img src="${item.img}" alt="${item.name}">`;
-    } else {
-      icon = `<div class="emoji">${item.emoji}</div>`;
-    }
+    let icon = item.img
+      ? `<img src="${item.img}" alt="${item.name}">`
+      : `<div class="emoji">${item.emoji}</div>`;
 
     div.innerHTML = `
       ${icon}
@@ -1689,24 +1945,15 @@ function renderUpgraderLists() {
     div.className = 'upgrader-item';
 
     let disabled = false;
-    if (upgraderYourItem && upgraderYourItem.name === item.name) {
-      disabled = true;
-    }
-    if (item.type === 'privilege' && privilegeInventory.some(p => p.name === item.name)) {
-      disabled = true;
-    }
+    if (upgraderYourItem && upgraderYourItem.name === item.name) disabled = true;
+    if (item.type === 'privilege' && privilegeInventory.some(p => p.name === item.name)) disabled = true;
 
     if (disabled) div.classList.add('disabled');
-    if (upgraderTargetItem && upgraderTargetItem.name === item.name) {
-      div.classList.add('selected');
-    }
+    if (upgraderTargetItem && upgraderTargetItem.name === item.name) div.classList.add('selected');
 
-    let icon;
-    if (item.img) {
-      icon = `<img src="${item.img}" alt="${item.name}">`;
-    } else {
-      icon = `<div class="emoji">${item.emoji}</div>`;
-    }
+    let icon = item.img
+      ? `<img src="${item.img}" alt="${item.name}">`
+      : `<div class="emoji">${item.emoji}</div>`;
 
     div.innerHTML = `
       ${icon}
@@ -1740,7 +1987,6 @@ function updateUpgraderChance() {
     upgraderSpinBtn.disabled = true;
     return;
   }
-
   const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
   upgraderChance.textContent = `Шанс: ${chance}%`;
   upgraderSpinBtn.disabled = false;
@@ -1765,16 +2011,9 @@ function startUpgrade() {
   upgraderWheelWrap.classList.add('active');
 
   const items = [];
-
-  for (let i = 0; i < 20; i++) {
-    items.push(Math.random() < 0.5 ? 'win' : 'lose');
-  }
-
+  for (let i = 0; i < 20; i++) items.push(Math.random() < 0.5 ? 'win' : 'lose');
   items.push(success ? 'win' : 'lose');
-
-  for (let i = 0; i < 20; i++) {
-    items.push(Math.random() < 0.5 ? 'win' : 'lose');
-  }
+  for (let i = 0; i < 20; i++) items.push(Math.random() < 0.5 ? 'win' : 'lose');
 
   const winIndex = 20;
   const ITEM_W = 120;
@@ -1782,7 +2021,6 @@ function startUpgrade() {
   items.forEach(type => {
     const div = document.createElement('div');
     div.className = 'upgrader-wheel-item';
-
     if (type === 'win') {
       div.style.color = '#4fc3f7';
       div.innerHTML = `<div class="emoji">💎</div><div>УСПЕХ</div>`;
@@ -1790,7 +2028,6 @@ function startUpgrade() {
       div.style.color = '#f44336';
       div.innerHTML = `<div class="emoji">💔</div><div>ПРОВАЛ</div>`;
     }
-
     upgraderTrack.appendChild(div);
   });
 
@@ -1826,7 +2063,6 @@ function startUpgrade() {
 function applyUpgradeResult(success) {
   if (success) {
     removeFromInventory(upgraderYourItem);
-
     if (upgraderTargetItem.type === 'privilege') {
       addPrivilegeToInventory(upgraderTargetItem);
     } else {
@@ -1835,9 +2071,7 @@ function applyUpgradeResult(success) {
   } else {
     removeFromInventory(upgraderYourItem);
   }
-
   recalcBestTitle();
-
   renderInventory();
   renderLeaders();
   saveAccount();
@@ -1863,7 +2097,6 @@ function recalcBestTitle() {
     updateTitle();
     return;
   }
-
   let best = null;
   let bestIdx = -1;
   privilegeInventory.forEach(p => {
@@ -1873,23 +2106,167 @@ function recalcBestTitle() {
       best = p;
     }
   });
-
   bestTitle = best;
   updateTitle();
 }
 
-// ==== ОБРАБОТЧИКИ АПГРЕЙДЕРА ====
 upgraderBtn.addEventListener('click', openUpgrader);
 upgraderCloseBtn.addEventListener('click', closeUpgrader);
 upgraderSpinBtn.addEventListener('click', startUpgrade);
 
 upgraderOverlay.addEventListener('click', (e) => {
-  if (e.target === upgraderOverlay && !upgraderSpinning) {
-    closeUpgrader();
-  }
+  if (e.target === upgraderOverlay && !upgraderSpinning) closeUpgrader();
 });
 
-// ==== ВВОД НИКА И ПАРОЛЯ (ИСПРАВЛЕНО) ====
+// ==== РУДНИК ====
+function renderMine() {
+  const totalMinutes = Math.floor(mineSecondsToday / 60);
+  mineTime.textContent = `Сегодня: ${totalMinutes} мин`;
+
+  mineList.innerHTML = '';
+
+  MINE_REWARDS.forEach((reward, idx) => {
+    const row = document.createElement('div');
+    row.className = 'mine-row';
+
+    const claimed = mineClaimed.includes(idx);
+    const available = totalMinutes >= reward.minutes;
+
+    if (claimed) row.classList.add('claimed');
+    else if (available) row.classList.add('available');
+
+    row.innerHTML = `
+      <span class="mine-time-label">${reward.minutes} мин</span>
+      <span class="mine-reward">${reward.label}</span>
+      <button class="mine-claim-btn" data-idx="${idx}" ${claimed || !available ? 'disabled' : ''}>
+        ${claimed ? '✓' : 'Забрать'}
+      </button>
+    `;
+    mineList.appendChild(row);
+  });
+
+  // Часовые награды после 2ч
+  if (totalMinutes >= 120) {
+    const hoursAfter = Math.floor((totalMinutes - 120) / 60);
+    const available = Math.max(0, hoursAfter - mineLastHourlyClaimed);
+
+    const row = document.createElement('div');
+    row.className = 'mine-row';
+    if (available > 0) row.classList.add('available');
+
+    row.innerHTML = `
+      <span class="mine-time-label">+1 час</span>
+      <span class="mine-reward">+500 🪙 (доступно: ${available})</span>
+      <button class="mine-claim-btn" data-hourly="1" ${available <= 0 ? 'disabled' : ''}>
+        ${available > 0 ? 'Забрать' : '—'}
+      </button>
+    `;
+    mineList.appendChild(row);
+  }
+
+  mineList.querySelectorAll('.mine-claim-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.hourly) {
+        claimHourly();
+      } else {
+        const idx = parseInt(btn.dataset.idx);
+        claimMineReward(idx);
+      }
+    });
+  });
+}
+
+function claimMineReward(idx) {
+  if (mineClaimed.includes(idx)) return;
+  const reward = MINE_REWARDS[idx];
+  const totalMinutes = Math.floor(mineSecondsToday / 60);
+  if (totalMinutes < reward.minutes) return;
+
+  mineClaimed.push(idx);
+
+  if (reward.type === 'itemsCase') {
+    closeMineAndOpenCase('items');
+  } else if (reward.type === 'rankCase') {
+    closeMineAndOpenCase('privileges');
+  } else if (reward.type === 'coins') {
+    balance += reward.value;
+    showIncomePopup(reward.value, '🪙');
+    updateBalance();
+  } else if (reward.type === 'diamonds') {
+    diamonds += reward.value;
+    showIncomePopup(reward.value, '💎');
+    updateBalance();
+  } else if (reward.type === 'arcanCase') {
+    alert('Кейс Аркан скоро появится!');
+  }
+
+  saveAccount();
+  renderMine();
+}
+
+function claimHourly() {
+  const totalMinutes = Math.floor(mineSecondsToday / 60);
+  const hoursAfter = Math.floor((totalMinutes - 120) / 60);
+  const available = Math.max(0, hoursAfter - mineLastHourlyClaimed);
+  if (available <= 0) return;
+
+  mineLastHourlyClaimed += 1;
+  balance += MINE_HOURLY_REWARD;
+  showIncomePopup(MINE_HOURLY_REWARD, '🪙');
+  updateBalance();
+  saveAccount();
+  renderMine();
+}
+
+function closeMineAndOpenCase(caseType) {
+  mineOverlay.classList.remove('active');
+  setTimeout(() => {
+    showOpenModal(caseType, true);
+  }, 200);
+}
+
+function startMineTick() {
+  if (mineTickHandle) clearInterval(mineTickHandle);
+  mineTickHandle = setInterval(() => {
+    if (!playerNick) return;
+    if (document.hidden) return;
+
+    if (mineDate !== todayStr()) {
+      mineDate = todayStr();
+      mineSecondsToday = 0;
+      mineClaimed = [];
+      mineLastHourlyClaimed = 0;
+    }
+
+    mineSecondsToday++;
+    if (mineOverlay.classList.contains('active')) renderMine();
+
+    if (mineSecondsToday % 30 === 0) saveAccount();
+  }, 1000);
+}
+
+function openMine() {
+  if (mineDate !== todayStr()) {
+    mineDate = todayStr();
+    mineSecondsToday = 0;
+    mineClaimed = [];
+    mineLastHourlyClaimed = 0;
+  }
+  renderMine();
+  mineOverlay.classList.add('active');
+}
+
+function closeMine() {
+  mineOverlay.classList.remove('active');
+}
+
+mineBtn.addEventListener('click', openMine);
+mineCloseBtn.addEventListener('click', closeMine);
+mineOverlay.addEventListener('click', (e) => {
+  if (e.target === mineOverlay) closeMine();
+});
+
+// ==== ВВОД НИКА И ПАРОЛЯ ====
 function checkInputs() {
   if (!nicknameBtn || !nicknameInput || !passwordInput) return;
   const ok = nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0;
@@ -1898,20 +2275,14 @@ function checkInputs() {
 
 nicknameInput.addEventListener('input', checkInputs);
 nicknameInput.addEventListener('keyup', checkInputs);
-nicknameInput.addEventListener('change', checkInputs);
 passwordInput.addEventListener('input', checkInputs);
 passwordInput.addEventListener('keyup', checkInputs);
-passwordInput.addEventListener('change', checkInputs);
 
 nicknameInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !nicknameBtn.disabled) {
-    nicknameBtn.click();
-  }
+  if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click();
 });
 passwordInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !nicknameBtn.disabled) {
-    nicknameBtn.click();
-  }
+  if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click();
 });
 
 nicknameBtn.addEventListener('click', () => {
@@ -1937,7 +2308,11 @@ nicknameBtn.addEventListener('click', () => {
       bestTitle: null,
       totalOpened: 0,
       totalSpentDiamonds: 0,
-      totalSpentCoins: 0
+      totalSpentCoins: 0,
+      mineSecondsToday: 0,
+      mineClaimed: [],
+      mineLastHourlyClaimed: 0,
+      mineDate: todayStr()
     };
     localStorage.setItem('accounts', JSON.stringify(accounts));
   }
@@ -1951,14 +2326,15 @@ nicknameBtn.addEventListener('click', () => {
   updateTitle();
   renderInventory();
   renderLeaders();
+
+  startMineTick();
 });
 
-// сразу проверяем состояние кнопки при загрузке
 checkInputs();
 
-// ==== ТРЕЙДЫ (заглушка) ====
+// ==== ЗАГЛУШКА ОБМЕНА ====
 tradeBtn.addEventListener('click', () => {
-  alert('Трейды пока в разработке');
+  alert('Обмен пока в разработке');
 });
 
 // ==== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ====
@@ -1968,10 +2344,8 @@ const tabSections = document.querySelectorAll('.tab-section');
 hotbarBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
-
     hotbarBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
     tabSections.forEach(s => s.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
   });
@@ -1988,14 +2362,11 @@ sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
   item.addEventListener('click', (e) => {
     e.stopPropagation();
     const filter = item.dataset.filter;
-
     sortMenu.querySelectorAll('.sort-menu-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
-
     sortLabel.textContent = item.textContent;
     currentFilter = filter;
     renderInventory();
-
     sortMenu.classList.remove('open');
     sortBtn.classList.remove('open');
   });
@@ -2006,16 +2377,18 @@ document.addEventListener('click', () => {
   sortBtn.classList.remove('open');
 });
 
-// ==== СОБЫТИЯ ====
+// ==== МОДАЛКА КЕЙСОВ ====
 modalClose.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) closeModal();
 });
 
-// старт
+// ==== СТАРТ ====
 updateBalance();
 updateTitle();
 renderInventory();
 renderLeaders();
 startIncome();
- </script>
+</script>
+</body>
+</html>

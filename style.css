@@ -1,6 +1,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  background: url('https://avatars.mds.yandex.net/i?id=8c6b6affcbc4c38379f4511c440605f7ca2082f1-4599578-images-thumbs&n=13') no-repeat center center fixed;
+  background: url('https://avatars.mds.yandex.net/i?id=9f324412f8dc13fd28a4540e2374c9f48cd350f5-12724437-images-thumbs&n=13') no-repeat center center fixed;
   background-size: cover;
   color: #fff;
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -217,7 +217,7 @@ h1 {
 .tab-section.active { display: block; }
 
 #tab-inventory {
-  background: url('https://avatars.mds.yandex.net/i?id=5f3a0e2a4d555f3f1f1c3d2afe0b059753720983-3687098-images-thumbs&n=13') no-repeat center center fixed;
+  background: url('https://avatars.mds.yandex.net/i?id=f66e45370142771ffa890dfcdef16d40_l-3637350-images-thumbs&ref=rim&n=13&w=502&h=750') no-repeat center center fixed;
   background-size: cover;
   position: fixed;
   top: 0;
@@ -230,7 +230,7 @@ h1 {
 }
 
 #tab-profile {
-  background: url('https://avatars.mds.yandex.net/i?id=a768684e34d2d4c53b6a17fb886b535197d726de-4120171-images-thumbs&n=13') no-repeat center center fixed;
+  background: url('https://avatars.mds.yandex.net/i?id=79c260d50815acfbe60db3ed3707d1e4_l-3520543-images-thumbs&ref=rim&n=13&w=720&h=1280') no-repeat center center fixed;
   background-size: cover;
   position: fixed;
   top: 0;

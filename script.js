@@ -2,6 +2,7 @@
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
 const ITEMS_CASE_PRICE_COINS = 150;
+const ARCANA_CASE_PRICE_COINS = 1000;
 const START_BALANCE = 150;
 const START_DIAMONDS = 100;
 const ITEM_WIDTH = 150;
@@ -86,7 +87,27 @@ const ITEMS = [
   { name: 'Aghanim\'s Blessing', chance: 0.1666, color: '#f44336', emoji: '🔮', type: 'item', points: 50, sellPriceCoins: 250, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2, img: 'https://dota2.ru/img/items/aghanims_blessing_rosan.webp?1732972302' },
 ];
 
-const ALL_ITEMS = [...PRIVILEGES, ...ITEMS];
+// ==== АРКАНЫ DOTA 2 ====
+const ARCANAS = [
+  { name: 'Flockheart\'s Gamble', chance: 11.25, color: '#ffffff', emoji: '🎲', type: 'arcana', points: 100, sellPriceCoins: 500, sellPriceDiamonds: 250, passiveIncomeCoins: 50, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/25/Cosmetic_icon_Flockheart%27s_Gamble.png/revision/latest/scale-to-width-down/200?cb=20191219034436' },
+  { name: 'The One True King', chance: 11.25, color: '#ffffff', emoji: '👑', type: 'arcana', points: 100, sellPriceCoins: 500, sellPriceDiamonds: 250, passiveIncomeCoins: 50, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/16/Cosmetic_icon_The_One_True_King_Bundle.png/revision/latest/scale-to-width-down/200?cb=20200526034238' },
+  { name: 'Dread Retribution', chance: 11.25, color: '#ffffff', emoji: '🏹', type: 'arcana', points: 100, sellPriceCoins: 500, sellPriceDiamonds: 250, passiveIncomeCoins: 50, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/9b/Cosmetic_icon_Dread_Retribution_Bundle.png/revision/latest/scale-to-width-down/200?cb=20211221073625' },
+  { name: 'Voidstorm Asylum', chance: 11.25, color: '#ffffff', emoji: '🌀', type: 'arcana', points: 100, sellPriceCoins: 500, sellPriceDiamonds: 250, passiveIncomeCoins: 50, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/e/ee/Cosmetic_icon_Voidstorm_Asylum.png/revision/latest/scale-to-width-down/200?cb=20221118190957' },
+  { name: 'Frost Avalanche', chance: 8.75, color: '#1565c0', emoji: '❄️', type: 'arcana', points: 250, sellPriceCoins: 700, sellPriceDiamonds: 350, passiveIncomeCoins: 70, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/2/2f/Cosmetic_icon_Frost_Avalanche.png/revision/latest/scale-to-width-down/200?cb=20150211195714' },
+  { name: 'Manifold Paradox', chance: 8.75, color: '#1565c0', emoji: '🗡️', type: 'arcana', points: 250, sellPriceCoins: 700, sellPriceDiamonds: 350, passiveIncomeCoins: 70, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/0/0c/Cosmetic_icon_Manifold_Paradox.png/revision/latest/scale-to-width-down/200?cb=20141121044212' },
+  { name: 'Great Sage\'s Reckoning', chance: 8.75, color: '#1565c0', emoji: '🐒', type: 'arcana', points: 250, sellPriceCoins: 700, sellPriceDiamonds: 350, passiveIncomeCoins: 70, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/9/92/Cosmetic_icon_Great_Sage%27s_Reckoning.png/revision/latest/scale-to-width-down/200?cb=20200926121408' },
+  { name: 'Benevolent Companion', chance: 8.75, color: '#1565c0', emoji: '✨', type: 'arcana', points: 250, sellPriceCoins: 700, sellPriceDiamonds: 350, passiveIncomeCoins: 70, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c4/Cosmetic_icon_Benevolent_Companion.png/revision/latest/scale-to-width-down/200?cb=20170518210948' },
+  { name: 'Blades of Voth Domosh', chance: 3.75, color: '#9c27b0', emoji: '⚔️', type: 'arcana', points: 400, sellPriceCoins: 1000, sellPriceDiamonds: 500, passiveIncomeCoins: 100, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/b/b1/Cosmetic_icon_Blades_of_Voth_Domosh.png/revision/latest/scale-to-width-down/200?cb=20131214111523' },
+  { name: 'Fractal Horns of Inner Abysm', chance: 3.75, color: '#9c27b0', emoji: '😈', type: 'arcana', points: 400, sellPriceCoins: 1000, sellPriceDiamonds: 500, passiveIncomeCoins: 100, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/a/a8/Cosmetic_icon_Fractal_Horns_of_Inner_Abysm.png/revision/latest/scale-to-width-down/200?cb=20140207041457' },
+  { name: 'Swine of the Sunken Galley', chance: 3.75, color: '#9c27b0', emoji: '🐷', type: 'arcana', points: 400, sellPriceCoins: 1000, sellPriceDiamonds: 500, passiveIncomeCoins: 100, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/4/41/Cosmetic_icon_Swine_of_the_Sunken_Galley_Bundle.png/revision/latest/scale-to-width-down/200?cb=20140831232121' },
+  { name: 'Feast of Abscession', chance: 3.75, color: '#9c27b0', emoji: '🪝', type: 'arcana', points: 400, sellPriceCoins: 1000, sellPriceDiamonds: 500, passiveIncomeCoins: 100, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/c/c9/Cosmetic_icon_Feast_of_Abscession.png/revision/latest/scale-to-width-down/200?cb=20180403215928' },
+  { name: 'The Eminence of Ristul', chance: 1.225, color: '#f44336', emoji: '💜', type: 'arcana', points: 700, sellPriceCoins: 1500, sellPriceDiamonds: 750, passiveIncomeCoins: 150, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/1a/Cosmetic_icon_The_Eminence_of_Ristul_Bundle.png/revision/latest/scale-to-width-down/200?cb=20200612062226' },
+  { name: 'Phantom Advent', chance: 1.225, color: '#f44336', emoji: '🦋', type: 'arcana', points: 700, sellPriceCoins: 1500, sellPriceDiamonds: 750, passiveIncomeCoins: 150, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/19/Cosmetic_icon_Phantom_Advent_Bundle.png/revision/latest/scale-to-width-down/200?cb=20210626205121' },
+  { name: 'Claszian Apostasy', chance: 1.225, color: '#f44336', emoji: '🌑', type: 'arcana', points: 700, sellPriceCoins: 1500, sellPriceDiamonds: 750, passiveIncomeCoins: 150, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/1/13/Cosmetic_icon_Claszian_Apostasy.png/revision/latest/scale-to-width-down/200?cb=20220910075909' },
+  { name: 'Fiery Soul of the Slayer', chance: 1.225, color: '#f44336', emoji: '🔥', type: 'arcana', points: 700, sellPriceCoins: 1500, sellPriceDiamonds: 750, passiveIncomeCoins: 150, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/7/77/Cosmetic_icon_Fiery_Soul_of_the_Slayer.png/revision/latest/scale-to-width-down/200?cb=20140217134009' },
+  { name: 'Demon Eater', chance: 0.1, color: '#ff9800', emoji: '😈', type: 'arcana', points: 1500, sellPriceCoins: 5000, sellPriceDiamonds: 2500, passiveIncomeCoins: 500, passiveIncomeDiamonds: 0, img: 'https://static.wikia.nocookie.net/dota2_gamepedia/images/8/81/Cosmetic_icon_Demon_Eater.png/revision/latest/scale-to-width-down/200?cb=20140924190505' },
+];
+const ALL_ITEMS = [...PRIVILEGES, ...ITEMS, ...ARCANAS];
 const RARITY_ORDER = ['Рекрут', 'Страж', 'Рыцарь', 'Герой', 'Легенда', 'Властелин', 'Божество', 'Титан'];
 
 const MINE_REWARDS = [
@@ -94,7 +115,7 @@ const MINE_REWARDS = [
   { minutes: 10, type: 'coins', value: 200, label: '200 🪙' },
   { minutes: 30, type: 'diamonds', value: 50, label: '50 💎' },
   { minutes: 60, type: 'rankCase', label: '🎁 Кейс рангов' },
-  { minutes: 120, type: 'arcanCase', label: '🎁 Кейс Аркан (скоро)' },
+  { minutes: 120, type: 'arcanCase', label: '🎁 Кейс с арканами' },
 ];
 const MINE_HOURLY_REWARD = 500;
 
@@ -166,7 +187,6 @@ const mineOverlay = document.getElementById('mineOverlay');
 const mineCloseBtn = document.getElementById('mineCloseBtn');
 const mineList = document.getElementById('mineList');
 const mineTime = document.getElementById('mineTime');
-
 // ==== ФУНКЦИИ ====
 function updateBalance() {
   balanceEl.textContent = Math.floor(balance);
@@ -398,16 +418,35 @@ let currentCaseType = 'privileges';
 
 function showOpenModal(caseType, free = false) {
   currentCaseType = caseType;
-  currentPrizeList = caseType === 'privileges' ? PRIVILEGES : ITEMS;
-  modalTitle.textContent = caseType === 'privileges' ? 'КЕЙС РАНГОВ' : 'КЕЙС С ПРЕДМЕТАМИ';
+  if (caseType === 'privileges') currentPrizeList = PRIVILEGES;
+  else if (caseType === 'arcanas') currentPrizeList = ARCANAS;
+  else currentPrizeList = ITEMS;
+
+  modalTitle.textContent = caseType === 'privileges' ? 'КЕЙС РАНГОВ' :
+                            caseType === 'arcanas' ? 'КЕЙС С АРКАНАМИ' :
+                            'КЕЙС С ПРЕДМЕТАМИ';
   modalOverlay.classList.add('active');
   modalResult.textContent = '';
   modalClose.classList.remove('active');
   priceChoice.style.display = 'none';
   wrapEl.style.display = 'none';
-  if (free) startSpin('free');
-  else if (caseType === 'items') priceChoice.style.display = 'flex';
-  else startSpin('diamonds');
+
+  if (free) {
+    startSpin('free');
+  } else if (caseType === 'items') {
+    priceChoice.style.display = 'flex';
+  } else if (caseType === 'arcanas') {
+    if (balance < ARCANA_CASE_PRICE_COINS) {
+      modalResult.textContent = 'Недостаточно монет!';
+      modalResult.style.color = '#f44336';
+      return;
+    }
+    balance -= ARCANA_CASE_PRICE_COINS;
+    totalSpentCoins += ARCANA_CASE_PRICE_COINS;
+    startSpin('coins');
+  } else {
+    startSpin('diamonds');
+  }
 }
 
 payDiamonds.addEventListener('click', () => {
@@ -483,6 +522,8 @@ function closeModal() { modalOverlay.classList.remove('active'); }
 
 openBtn.addEventListener('click', () => showOpenModal('privileges'));
 openItemsBtn.addEventListener('click', () => showOpenModal('items'));
+const openArcanaBtn = document.getElementById('openArcanaBtn');
+if (openArcanaBtn) openArcanaBtn.addEventListener('click', () => showOpenModal('arcanas'));
 
 // ==== АПГРЕЙДЕР ====
 function openUpgrader() {
@@ -704,7 +745,7 @@ function claimMineReward(idx) {
   else if (reward.type === 'rankCase') closeMineAndOpenCase('privileges');
   else if (reward.type === 'coins') { balance += reward.value; showIncomePopup(reward.value, '🪙'); updateBalance(); }
   else if (reward.type === 'diamonds') { diamonds += reward.value; showIncomePopup(reward.value, '💎'); updateBalance(); }
-  else if (reward.type === 'arcanCase') alert('Кейс Аркан скоро появится!');
+  else if (reward.type === 'arcanCase') closeMineAndOpenCase('arcanas');
   saveAccount();
   renderMine();
 }

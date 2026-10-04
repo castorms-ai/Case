@@ -500,7 +500,7 @@ function loadAccount(nick, password) {
     mineDate = todayStr(); mineSecondsToday = 0; mineClaimed = []; mineLastHourlyClaimed = 0;
   }
   return 'ok';
-  }
+      }
 .player-bottom {
   display: flex;
   align-items: center;
@@ -524,4 +524,4 @@ function loadAccount(nick, password) {
   width: 30px;
   height: 30px;
   object-fit: contain;
-  }
+}

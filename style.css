@@ -224,3 +224,27 @@ h1 { text-align: center; margin-top: 90px; margin-bottom: 30px; font-size: 40px;
 .rankup-title { font-size: 28px; font-weight: bold; color: #ffd700; margin-bottom: 15px; text-shadow: 0 0 20px #ffd700; }
 .rankup-icon img { width: 100px; height: 100px; object-fit: contain; }
 .rankup-name { font-size: 26px; font-weight: bold; color: #fff; margin-top: 10px; text-shadow: 0 0 15px #888; }
+.player-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.player-bottom .xp-bar-wrap {
+  flex: 1;
+  margin-top: 0;
+}
+.xp-rank {
+  font-size: 24px;
+  min-width: 30px;
+  text-align: center;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.xp-rank img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}

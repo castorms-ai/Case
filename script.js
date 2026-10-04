@@ -500,40 +500,43 @@ function loadAccount(nick, password) {
     mineDate = todayStr(); mineSecondsToday = 0; mineClaimed = []; mineLastHourlyClaimed = 0;
   }
   return 'ok';
-      }
-.player-bottom {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-.player-bottom .xp-bar-wrap {
-  flex: 1;
-  margin-top: 0;
-}
-.xp-rank {
-  font-size: 24px;
-  min-width: 30px;
-  text-align: center;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.xp-rank img {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-// ==== ОБРАБОТЧИКИ КНОПОК ====
+                                            }
+let currentPrizeList = PRIVILEGES;
+let currentCaseType = 'privileges';
 
-// Кейсы
-openBtn.addEventListener('click', () => showOpenModal('privileges'));
-openItemsBtn.addEventListener('click', () => showOpenModal('items'));
-const openArcanaBtn = document.getElementById('openArcanaBtn');
-if (openArcanaBtn) openArcanaBtn.addEventListener('click', () => showOpenModal('arcanas'));
+function showOpenModal(caseType, free = false) {
+  currentCaseType = caseType;
+  if (caseType === 'privileges') currentPrizeList = PRIVILEGES;
+  else if (caseType === 'arcanas') currentPrizeList = ARCANAS;
+  else currentPrizeList = ITEMS;
 
-// Оплата кейса предметов
+  modalTitle.textContent = caseType === 'privileges' ? 'КЕЙС РАНГОВ' :
+                            caseType === 'arcanas' ? 'КЕЙС С АРКАНАМИ' :
+                            'КЕЙС С ПРЕДМЕТАМИ';
+  modalOverlay.classList.add('active');
+  modalResult.textContent = '';
+  modalClose.classList.remove('active');
+  priceChoice.style.display = 'none';
+  wrapEl.style.display = 'none';
+
+  if (free) {
+    startSpin('free');
+  } else if (caseType === 'items') {
+    priceChoice.style.display = 'flex';
+  } else if (caseType === 'arcanas') {
+    if (balance < ARCANA_CASE_PRICE_COINS) {
+      modalResult.textContent = 'Недостаточно монет!';
+      modalResult.style.color = '#f44336';
+      return;
+    }
+    balance -= ARCANA_CASE_PRICE_COINS;
+    totalSpentCoins += ARCANA_CASE_PRICE_COINS;
+    startSpin('coins');
+  } else {
+    startSpin('diamonds');
+  }
+}
+
 payDiamonds.addEventListener('click', () => {
   if (diamonds < ITEMS_CASE_PRICE_DIAMONDS) { modalResult.textContent = 'Недостаточно алмазов!'; modalResult.style.color = '#f44336'; return; }
   diamonds -= ITEMS_CASE_PRICE_DIAMONDS;
@@ -548,11 +551,237 @@ payCoins.addEventListener('click', () => {
   startSpin('coins');
 });
 
-// Модалка кейсов
-modalClose.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+function startSpin(currency) {
+  if (isOpening) return;
+  isOpening = true;
+  if (currency === 'diamonds' && currentCaseType === 'privileges') {
+    if (diamonds < PRIVILEGE_CASE_PRICE_DIAMONDS) {
+      modalResult.textContent = 'Недостаточно алмазов!';
+      modalResult.style.color = '#f44336';
+      isOpening = false;
+      return;
+    }
+    diamonds -= PRIVILEGE_CASE_PRICE_DIAMONDS;
+    totalSpentDiamonds += PRIVILEGE_CASE_PRICE_DIAMONDS;
+  }
+  totalOpened++;
+  updateBalance();
+  priceChoice.style.display = 'none';
+  wrapEl.style.display = 'block';
+  openBtn.disabled = true;
+  openItemsBtn.disabled = true;
+  const winPrize = rollPrize(currentPrizeList);
+  trackEl.innerHTML = '';
+  trackEl.style.transition = 'none';
+  trackEl.style.transform = 'translateX(0)';
+  const items = [];
+  for (let i = 0; i < 30; i++) items.push(currentPrizeList[Math.floor(Math.random() * currentPrizeList.length)]);
+  items.push(winPrize);
+  for (let i = 0; i < EXTRA_ITEMS; i++) items.push(currentPrizeList[Math.floor(Math.random() * currentPrizeList.length)]);
+  const winIndex = 30;
+  items.forEach(p => trackEl.appendChild(createItem(p)));
+  const wrapWidth = wrapEl.offsetWidth;
+  const centerOffset = wrapWidth / 2;
+  const targetX = -(winIndex * ITEM_WIDTH + ITEM_WIDTH / 2 - centerOffset);
+  requestAnimationFrame(() => {
+    trackEl.style.transition = `transform ${SPIN_DURATION}ms cubic-bezier(0.15, 0.85, 0.3, 1)`;
+    trackEl.style.transform = `translateX(${targetX}px)`;
+  });
+  setTimeout(() => {
+    modalResult.textContent = winPrize.name;
+    modalResult.style.color = winPrize.color;
+    if (winPrize.type === 'privilege') {
+      const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
+      const newIdx = RARITY_ORDER.indexOf(winPrize.name);
+      if (newIdx > currentIdx) { bestTitle = winPrize; updateTitle(); }
+      const added = addPrivilegeToInventory(winPrize);
+      if (!added) modalResult.textContent = winPrize.name + ' (уже есть)';
+    } else addItemToInventory(winPrize);
 
-// Апгрейдер
+    if (currentCaseType === 'privileges') addXP(2);
+    else if (currentCaseType === 'items') addXP(2);
+    else if (currentCaseType === 'arcanas') addXP(15);
+
+    renderInventory();
+    saveAccount();
+    modalClose.classList.add('active');
+    isOpening = false;
+    openBtn.disabled = false;
+    openItemsBtn.disabled = false;
+  }, SPIN_DURATION + 100);
+}
+
+function closeModal() { modalOverlay.classList.remove('active'); }
+
+openBtn.addEventListener('click', () => showOpenModal('privileges'));
+openItemsBtn.addEventListener('click', () => showOpenModal('items'));
+const openArcanaBtn = document.getElementById('openArcanaBtn');
+if (openArcanaBtn) openArcanaBtn.addEventListener('click', () => showOpenModal('arcanas'));
+
+// ==== АПГРЕЙДЕР ====
+function openUpgrader() {
+  upgraderYourItem = null;
+  upgraderTargetItem = null;
+  upgraderChance.textContent = 'Выбери предметы';
+  upgraderResult.textContent = '';
+  upgraderResult.style.color = '#ffd700';
+  upgraderWheelWrap.classList.remove('active');
+  upgraderTrack.innerHTML = '';
+  upgraderSpinBtn.disabled = true;
+  upgraderSpinBtn.textContent = 'Крутить';
+  upgraderOverlay.classList.add('active');
+  renderUpgraderLists();
+}
+
+function closeUpgrader() { upgraderOverlay.classList.remove('active'); }
+
+function renderUpgraderLists() {
+  upgraderYourList.innerHTML = '';
+  const allMine = [];
+  privilegeInventory.forEach(p => allMine.push({ ...p, count: 1 }));
+  itemInventory.forEach(p => allMine.push({ ...p, count: p.count }));
+  allMine.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-item';
+    let disabled = item.type === 'privilege' && privilegeInventory.length === 1;
+    if (disabled) div.classList.add('disabled');
+    if (upgraderYourItem && upgraderYourItem.name === item.name) div.classList.add('selected');
+    let icon = item.img ? `<img src="${item.img}" alt="${item.name}">` : `<div class="emoji">${item.emoji}</div>`;
+    div.innerHTML = `${icon}<div class="item-name" style="color:${item.color}">${item.name}</div><div class="item-count">${item.count > 1 ? 'x' + item.count : ''}</div>`;
+    if (!disabled) div.addEventListener('click', () => {
+      if (upgraderSpinning) return;
+      upgraderYourItem = item;
+      renderUpgraderLists();
+      updateUpgraderChance();
+    });
+    upgraderYourList.appendChild(div);
+  });
+  upgraderTargetList.innerHTML = '';
+  ALL_ITEMS.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-item';
+    let disabled = false;
+    if (upgraderYourItem && upgraderYourItem.name === item.name) disabled = true;
+    if (item.type === 'privilege' && privilegeInventory.some(p => p.name === item.name)) disabled = true;
+    if (disabled) div.classList.add('disabled');
+    if (upgraderTargetItem && upgraderTargetItem.name === item.name) div.classList.add('selected');
+    let icon = item.img ? `<img src="${item.img}" alt="${item.name}">` : `<div class="emoji">${item.emoji}</div>`;
+    div.innerHTML = `${icon}<div class="item-name" style="color:${item.color}">${item.name}</div>`;
+    if (!disabled) div.addEventListener('click', () => {
+      if (upgraderSpinning) return;
+      upgraderTargetItem = item;
+      renderUpgraderLists();
+      updateUpgraderChance();
+    });
+    upgraderTargetList.appendChild(div);
+  });
+}
+
+function calcUpgradeChance(yourPoints, targetPoints) {
+  if (!yourPoints || !targetPoints) return 0;
+  let chance = (yourPoints / targetPoints) * 100;
+  if (chance > 90) chance = 90;
+  if (chance < 0.1) chance = 0.1;
+  return Math.round(chance);
+}
+
+function updateUpgraderChance() {
+  if (!upgraderYourItem || !upgraderTargetItem) {
+    upgraderChance.textContent = 'Выбери предметы';
+    upgraderSpinBtn.disabled = true;
+    return;
+  }
+  const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
+  upgraderChance.textContent = `Шанс: ${chance}%`;
+  upgraderSpinBtn.disabled = false;
+}
+
+function startUpgrade() {
+  if (upgraderSpinning) return;
+  if (!upgraderYourItem || !upgraderTargetItem) return;
+  upgraderSpinning = true;
+  upgraderSpinBtn.disabled = true;
+  upgraderResult.textContent = '';
+  const chance = calcUpgradeChance(upgraderYourItem.points, upgraderTargetItem.points);
+  const success = Math.random() * 100 < chance;
+  applyUpgradeResult(success);
+  upgraderTrack.innerHTML = '';
+  upgraderTrack.style.transition = 'none';
+  upgraderTrack.style.transform = 'translateX(0)';
+  upgraderWheelWrap.classList.add('active');
+  const items = [];
+  for (let i = 0; i < 20; i++) items.push(Math.random() < 0.5 ? 'win' : 'lose');
+  items.push(success ? 'win' : 'lose');
+  for (let i = 0; i < 20; i++) items.push(Math.random() < 0.5 ? 'win' : 'lose');
+  const winIndex = 20;
+  const ITEM_W = 120;
+  items.forEach(type => {
+    const div = document.createElement('div');
+    div.className = 'upgrader-wheel-item';
+    if (type === 'win') { div.style.color = '#4fc3f7'; div.innerHTML = `<div class="emoji">♾️</div><div>УСПЕХ</div>`; }
+    else { div.style.color = '#f44336'; div.innerHTML = `<div class="emoji">💔</div><div>ПРОВАЛ</div>`; }
+    upgraderTrack.appendChild(div);
+  });
+  const wrapWidth = upgraderWheelWrap.offsetWidth;
+  const centerOffset = wrapWidth / 2;
+  const targetX = -(winIndex * ITEM_W + ITEM_W / 2 - centerOffset);
+  setTimeout(() => {
+    upgraderTrack.style.transition = 'transform 7000ms cubic-bezier(0.15, 0.85, 0.3, 1)';
+    upgraderTrack.style.transform = `translateX(${targetX}px)`;
+  }, 50);
+  setTimeout(() => {
+    if (success) {
+      upgraderResult.textContent = `✅ УСПЕХ! Получен: ${upgraderTargetItem ? upgraderTargetItem.name : '—'}`;
+      upgraderResult.style.color = '#4caf50';
+    } else {
+      upgraderResult.textContent = `❌ ПРОВАЛ. Предмет потерян`;
+      upgraderResult.style.color = '#f44336';
+    }
+    upgraderYourItem = null;
+    upgraderTargetItem = null;
+    upgraderChance.textContent = 'Выбери предметы';
+    renderUpgraderLists();
+    upgraderSpinning = false;
+    upgraderSpinBtn.disabled = true;
+    upgraderSpinBtn.textContent = 'Крутить';
+  }, 7200);
+}
+
+function applyUpgradeResult(success) {
+  if (success) {
+    removeFromInventory(upgraderYourItem);
+    if (upgraderTargetItem.type === 'privilege') addPrivilegeToInventory(upgraderTargetItem);
+    else addItemToInventory(upgraderTargetItem);
+  } else removeFromInventory(upgraderYourItem);
+  recalcBestTitle();
+  renderInventory();
+  renderLeaders();
+  saveAccount();
+}
+
+function removeFromInventory(item) {
+  if (item.type === 'privilege') {
+    privilegeInventory = privilegeInventory.filter(p => p.name !== item.name);
+  } else {
+    const found = itemInventory.find(p => p.name === item.name);
+    if (found) {
+      found.count--;
+      if (found.count <= 0) itemInventory = itemInventory.filter(p => p.name !== item.name);
+    }
+  }
+}
+
+function recalcBestTitle() {
+  if (privilegeInventory.length === 0) { bestTitle = null; updateTitle(); return; }
+  let best = null, bestIdx = -1;
+  privilegeInventory.forEach(p => {
+    const idx = RARITY_ORDER.indexOf(p.name);
+    if (idx > bestIdx) { bestIdx = idx; best = p; }
+  });
+  bestTitle = best;
+  updateTitle();
+}
+
 upgraderBtn.addEventListener('click', openUpgrader);
 upgraderCloseBtn.addEventListener('click', closeUpgrader);
 upgraderSpinBtn.addEventListener('click', startUpgrade);
@@ -560,19 +789,155 @@ upgraderOverlay.addEventListener('click', (e) => {
   if (e.target === upgraderOverlay && !upgraderSpinning) closeUpgrader();
 });
 
-// Подарок
-tradeBtn.addEventListener('click', openGift);
-giftCloseBtn.addEventListener('click', closeGift);
-giftOverlay.addEventListener('click', (e) => { if (e.target === giftOverlay) closeGift(); });
-giftTabs.forEach(tab => {
-  tab.addEventListener('click', () => switchGiftTab(tab.dataset.giftTab));
+// ==== ПОДАРОК ====
+function giftHash(str) {
+  let hash = 0;
+  const full = str + GIFT_SECRET;
+  for (let i = 0; i < full.length; i++) {
+    hash = ((hash << 5) - hash) + full.charCodeAt(i);
+    hash = hash | 0;
+  }
+  return Math.abs(hash).toString(16).toUpperCase();
+}
+
+function openGift() {
+  giftOverlay.classList.add('active');
+  giftNick.value = '';
+  giftSelectedItem = null;
+  giftSelectedType = 'item';
+  giftAmount.value = '';
+  giftSendError.textContent = '';
+  giftCodeWrap.style.display = 'none';
+  giftCodeInput.value = '';
+  giftReceiveError.textContent = '';
+  giftPreviewWrap.style.display = 'none';
+  giftPendingTrade = null;
+  giftTypes.forEach(t => t.classList.remove('active'));
+  document.querySelector('.gift-type[data-type="item"]').classList.add('active');
+  renderGiftItemList();
+  giftAmountWrap.style.display = 'none';
+}
+
+function closeGift() { giftOverlay.classList.remove('active'); }
+
+function switchGiftTab(tab) {
+  giftTabs.forEach(t => t.classList.remove('active'));
+  document.querySelector(`.gift-tab[data-gift-tab="${tab}"]`).classList.add('active');
+  if (tab === 'send') {
+    giftSendSection.classList.add('active');
+    giftReceiveSection.classList.remove('active');
+  } else {
+    giftReceiveSection.classList.add('active');
+    giftSendSection.classList.remove('active');
+  }
+}
+
+function renderGiftItemList() {
+  giftItemList.innerHTML = '';
+  if (giftSelectedType === 'coins' || giftSelectedType === 'diamonds') {
+    giftAmountWrap.style.display = 'block';
+    giftItemList.style.display = 'none';
+    return;
+  }
+  giftAmountWrap.style.display = 'none';
+  giftItemList.style.display = 'block';
+  let list = [];
+  if (giftSelectedType === 'item') list = itemInventory.map(p => ({ ...p, type: 'item' }));
+  else if (giftSelectedType === 'privilege') list = privilegeInventory.map(p => ({ ...p, type: 'privilege' }));
+  if (list.length === 0) {
+    giftItemList.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Пусто</div>';
+    return;
+  }
+  list.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'gift-item';
+    if (giftSelectedItem && giftSelectedItem.name === item.name) div.classList.add('selected');
+    let icon = item.img ? `<img src="${item.img}" alt="${item.name}">` : `<div class="emoji">${item.emoji}</div>`;
+    div.innerHTML = `${icon}<div class="item-name" style="color:${item.color}">${item.name}</div><div class="item-count">${item.count > 1 ? 'x' + item.count : ''}</div>`;
+    div.addEventListener('click', () => { giftSelectedItem = item; renderGiftItemList(); });
+    giftItemList.appendChild(div);
+  });
+}
+
+giftTypes.forEach(typeBtn => {
+  typeBtn.addEventListener('click', () => {
+    giftTypes.forEach(t => t.classList.remove('active'));
+    typeBtn.classList.add('active');
+    giftSelectedType = typeBtn.dataset.type;
+    giftSelectedItem = null;
+    renderGiftItemList();
+  });
 });
+
+giftCreateBtn.addEventListener('click', () => {
+  giftSendError.textContent = '';
+  const nick = giftNick.value.trim();
+  if (!nick) { giftSendError.textContent = 'Введи ник!'; return; }
+  if (nick === playerNick) { giftSendError.textContent = 'Нельзя дарить себе!'; return; }
+  let itemName = '';
+  let amount = 0;
+  if (giftSelectedType === 'item' || giftSelectedType === 'privilege') {
+    if (!giftSelectedItem) { giftSendError.textContent = 'Выбери предмет!'; return; }
+    itemName = giftSelectedItem.name;
+  } else {
+    amount = parseInt(giftAmount.value);
+    if (!amount || amount <= 0) { giftSendError.textContent = 'Введи сумму!'; return; }
+    if (giftSelectedType === 'coins' && amount > balance) { giftSendError.textContent = 'Недостаточно монет!'; return; }
+    if (giftSelectedType === 'diamonds' && amount > diamonds) { giftSendError.textContent = 'Недостаточно алмазов!'; return; }
+  }
+  const ts = Math.floor(Date.now() / 1000);
+  const payload = `${playerNick}|${nick}|${giftSelectedType}|${itemName || amount}|${ts}`;
+  const hash = giftHash(payload);
+  const code = `GIFT|${payload}|${hash}`;
+  if (giftSelectedType === 'item') {
+    const found = itemInventory.find(p => p.name === itemName);
+    if (found) { found.count--; if (found.count <= 0) itemInventory = itemInventory.filter(p => p.name !== itemName); }
+  } else if (giftSelectedType === 'privilege') {
+    privilegeInventory = privilegeInventory.filter(p => p.name !== itemName);
+    recalcBestTitle();
+  } else if (giftSelectedType === 'coins') {
+    balance -= amount;
+  } else if (giftSelectedType === 'diamonds') {
+    diamonds -= amount;
+  }
+  updateBalance();
+  renderInventory();
+  saveAccount();
+  giftCode.value = code;
+  giftCodeWrap.style.display = 'block';
+});
+
 giftCopyBtn.addEventListener('click', () => {
   giftCode.select();
   document.execCommand('copy');
   giftCopyBtn.textContent = '✅ Скопировано!';
   setTimeout(() => { giftCopyBtn.textContent = '📋 Скопировать'; }, 1500);
 });
+
+giftReceiveBtn.addEventListener('click', () => {
+  giftReceiveError.textContent = '';
+  giftPreviewWrap.style.display = 'none';
+  const code = giftCodeInput.value.trim();
+  if (!code) { giftReceiveError.textContent = 'Вставь код!'; return; }
+  const parts = code.split('|');
+  if (parts.length !== 7 || parts[0] !== 'GIFT') { giftReceiveError.textContent = 'Неверный код!'; return; }
+  const [_, from, to, type, value, ts, hash] = parts;
+  const payload = `${from}|${to}|${type}|${value}|${ts}`;
+  const expectedHash = giftHash(payload);
+  if (hash !== expectedHash) { giftReceiveError.textContent = 'Код подделан!'; return; }
+  if (to !== playerNick) { giftReceiveError.textContent = 'Подарок не для тебя!'; return; }
+  const usedCodes = JSON.parse(localStorage.getItem('usedGiftCodes') || '[]');
+  if (usedCodes.includes(code)) { giftReceiveError.textContent = 'Этот код уже использован!'; return; }
+  giftPendingTrade = { code, from, to, type, value };
+  let previewText = '';
+  if (type === 'item') previewText = `📦 Предмет: <b>${value}</b>`;
+  else if (type === 'privilege') previewText = `🏆 Ранг: <b>${value}</b>`;
+  else if (type === 'coins') previewText = `⚜️ Монеты: <b>${value}</b>`;
+  else if (type === 'diamonds') previewText = `♾️ Алмазы: <b>${value}</b>`;
+  giftPreview.innerHTML = `<div class="gift-from">🎁 Подарок от игрока "${from}"</div><div class="gift-what">${previewText}</div>`;
+  giftPreviewWrap.style.display = 'block';
+});
+
 giftAcceptBtn.addEventListener('click', () => {
   if (!giftPendingTrade) return;
   const { code, type, value } = giftPendingTrade;
@@ -600,17 +965,166 @@ giftAcceptBtn.addEventListener('click', () => {
   giftPendingTrade = null;
   alert('🎁 Подарок получен!');
 });
+
 giftDeclineBtn.addEventListener('click', () => {
   giftPreviewWrap.style.display = 'none';
   giftPendingTrade = null;
 });
 
-// Рудник
+tradeBtn.addEventListener('click', openGift);
+giftCloseBtn.addEventListener('click', closeGift);
+giftOverlay.addEventListener('click', (e) => { if (e.target === giftOverlay) closeGift(); });
+giftTabs.forEach(tab => {
+  tab.addEventListener('click', () => switchGiftTab(tab.dataset.giftTab));
+});
+
+// ==== РУДНИК ====
+function renderMine() {
+  const totalMinutes = Math.floor(mineSecondsToday / 60);
+  mineTime.textContent = `Сегодня: ${totalMinutes} мин`;
+  mineList.innerHTML = '';
+  MINE_REWARDS.forEach((reward, idx) => {
+    const row = document.createElement('div');
+    row.className = 'mine-row';
+    const claimed = mineClaimed.includes(idx);
+    const available = totalMinutes >= reward.minutes;
+    if (claimed) row.classList.add('claimed');
+    else if (available) row.classList.add('available');
+    row.innerHTML = `
+      <span class="mine-time-label">${reward.minutes} мин</span>
+      <span class="mine-reward">${reward.label}</span>
+      <button class="mine-claim-btn" data-idx="${idx}" ${claimed || !available ? 'disabled' : ''}>${claimed ? '✓' : 'Забрать'}</button>
+    `;
+    mineList.appendChild(row);
+  });
+  if (totalMinutes >= 120) {
+    const hoursAfter = Math.floor((totalMinutes - 120) / 60);
+    const available = Math.max(0, hoursAfter - mineLastHourlyClaimed);
+    const row = document.createElement('div');
+    row.className = 'mine-row';
+    if (available > 0) row.classList.add('available');
+    row.innerHTML = `
+      <span class="mine-time-label">+1 час</span>
+      <span class="mine-reward">+500 ⚜️ (доступно: ${available})</span>
+      <button class="mine-claim-btn" data-hourly="1" ${available <= 0 ? 'disabled' : ''}>${available > 0 ? 'Забрать' : '—'}</button>
+    `;
+    mineList.appendChild(row);
+  }
+  mineList.querySelectorAll('.mine-claim-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.hourly) claimHourly();
+      else claimMineReward(parseInt(btn.dataset.idx));
+    });
+  });
+}
+
+function claimMineReward(idx) {
+  if (mineClaimed.includes(idx)) return;
+  const reward = MINE_REWARDS[idx];
+  if (Math.floor(mineSecondsToday / 60) < reward.minutes) return;
+  mineClaimed.push(idx);
+  if (reward.type === 'itemsCase') closeMineAndOpenCase('items');
+  else if (reward.type === 'rankCase') closeMineAndOpenCase('privileges');
+  else if (reward.type === 'coins') { balance += reward.value; showIncomePopup(reward.value, '⚜️'); updateBalance(); }
+  else if (reward.type === 'diamonds') { diamonds += reward.value; showIncomePopup(reward.value, '♾️'); updateBalance(); }
+  else if (reward.type === 'arcanCase') closeMineAndOpenCase('arcanas');
+  saveAccount();
+  renderMine();
+}
+
+function claimHourly() {
+  const totalMinutes = Math.floor(mineSecondsToday / 60);
+  const hoursAfter = Math.floor((totalMinutes - 120) / 60);
+  const available = Math.max(0, hoursAfter - mineLastHourlyClaimed);
+  if (available <= 0) return;
+  mineLastHourlyClaimed += 1;
+  balance += MINE_HOURLY_REWARD;
+  showIncomePopup(MINE_HOURLY_REWARD, '⚜️');
+  updateBalance();
+  saveAccount();
+  renderMine();
+}
+
+function closeMineAndOpenCase(caseType) {
+  mineOverlay.classList.remove('active');
+  setTimeout(() => showOpenModal(caseType, true), 200);
+}
+
+function startMineTick() {
+  if (mineTickHandle) clearInterval(mineTickHandle);
+  mineTickHandle = setInterval(() => {
+    if (!playerNick) return;
+    if (document.hidden) return;
+    if (mineDate !== todayStr()) {
+      mineDate = todayStr(); mineSecondsToday = 0; mineClaimed = []; mineLastHourlyClaimed = 0;
+    }
+    mineSecondsToday++;
+    if (mineOverlay.classList.contains('active')) renderMine();
+    if (mineSecondsToday % 30 === 0) saveAccount();
+  }, 1000);
+}
+
+function openMine() {
+  if (mineDate !== todayStr()) {
+    mineDate = todayStr(); mineSecondsToday = 0; mineClaimed = []; mineLastHourlyClaimed = 0;
+  }
+  renderMine();
+  mineOverlay.classList.add('active');
+}
+
+function closeMine() { mineOverlay.classList.remove('active'); }
+
 mineBtn.addEventListener('click', openMine);
 mineCloseBtn.addEventListener('click', closeMine);
 mineOverlay.addEventListener('click', (e) => { if (e.target === mineOverlay) closeMine(); });
 
-// Вкладки (Кейсы / Инвентарь / Профиль)
+// ==== ВВОД НИКА И ПАРОЛЯ ====
+function checkInputs() {
+  if (!nicknameBtn || !nicknameInput || !passwordInput) return;
+  const ok = nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0;
+  nicknameBtn.disabled = !ok;
+}
+nicknameInput.addEventListener('input', checkInputs);
+nicknameInput.addEventListener('keyup', checkInputs);
+nicknameInput.addEventListener('change', checkInputs);
+passwordInput.addEventListener('input', checkInputs);
+passwordInput.addEventListener('keyup', checkInputs);
+passwordInput.addEventListener('change', checkInputs);
+nicknameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click(); });
+passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click(); });
+
+nicknameBtn.addEventListener('click', () => {
+  const nick = nicknameInput.value.trim();
+  const pass = passwordInput.value;
+  if (!nick || !pass) return;
+  const result = loadAccount(nick, pass);
+  if (result === 'wrongpass') { nicknameError.textContent = 'Неверный пароль!'; return; }
+  if (result === 'new') {
+    const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+    accounts[nick] = {
+      password: pass, balance: START_BALANCE, diamonds: START_DIAMONDS,
+      privilegeInventory: [], itemInventory: [], bestTitle: null,
+      totalOpened: 0, totalSpentDiamonds: 0, totalSpentCoins: 0,
+      mineSecondsToday: 0, mineClaimed: [], mineLastHourlyClaimed: 0, mineDate: todayStr(),
+      xp: 0, rankIndex: 0
+    };
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+  }
+  playerNick = nick;
+  playerNickEl.textContent = playerNick;
+  nicknameOverlay.classList.add('hidden');
+  nicknameError.textContent = '';
+  updateBalance();
+  updateTitle();
+  updateXPBar();
+  renderInventory();
+  renderLeaders();
+  startMineTick();
+});
+
+checkInputs();
+
+// ==== ВКЛАДКИ ====
 const hotbarBtns = document.querySelectorAll('.hotbar-btn');
 const tabSections = document.querySelectorAll('.tab-section');
 hotbarBtns.forEach(btn => {
@@ -623,7 +1137,7 @@ hotbarBtns.forEach(btn => {
   });
 });
 
-// Сортировка
+// ==== СОРТИРОВКА ====
 sortBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   sortMenu.classList.toggle('open');
@@ -647,7 +1161,10 @@ document.addEventListener('click', () => {
   sortBtn.classList.remove('open');
 });
 
-// Старт
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+
+// ==== СТАРТ ====
 updateBalance();
 updateTitle();
 updateXPBar();

@@ -588,7 +588,7 @@ function calcUpgradeChance(yourPoints, targetPoints) {
   if (!yourPoints || !targetPoints) return 0;
   let chance = (yourPoints / targetPoints) * 100;
   if (chance > 90) chance = 90;
-  if (chance < 5) chance = 5;
+  if (chance < 0.1) chance = 0.1;
   return Math.round(chance);
 }
 

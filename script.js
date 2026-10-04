@@ -9,10 +9,6 @@ const ITEM_WIDTH = 150;
 const SPIN_DURATION = 15000;
 const EXTRA_ITEMS = 50;
 
-// ==== ИКОНКИ ====
-const ICON_DIAMOND = '<img class="icon" src="https://static.vecteezy.com/system/resources/thumbnails/036/723/151/small_2x/ai-generated-diamond-jewelry-concept-png.png" alt="diamond">';
-const ICON_COIN = '<img class="icon" src="https://static.vecteezy.com/system/resources/thumbnails/071/045/752/small_2x/a-sack-full-of-gold-coins-isolated-on-transparent-background-representing-treasure-free-png.png" alt="coin">';
-
 // ==== РАНГИ DOTA 2 ====
 const PRIVILEGES = [
   { name: 'Рекрут', chance: 40, color: '#8B7355', emoji: '🛡️', type: 'privilege',
@@ -117,8 +113,8 @@ const RARITY_ORDER = ['Рекрут', 'Страж', 'Рыцарь', 'Герой'
 
 const MINE_REWARDS = [
   { minutes: 5, type: 'itemsCase', label: '🎁 Кейс с предметами' },
-  { minutes: 10, type: 'coins', value: 200, label: `200 ${ICON_COIN}` },
-  { minutes: 30, type: 'diamonds', value: 50, label: `50 ${ICON_DIAMOND}` },
+  { minutes: 10, type: 'coins', value: 200, label: '200 ⚜️' },
+  { minutes: 30, type: 'diamonds', value: 50, label: '50 ♾️' },
   { minutes: 60, type: 'rankCase', label: '🎁 Кейс рангов' },
   { minutes: 120, type: 'arcanCase', label: '🎁 Кейс с арканами' },
 ];
@@ -195,8 +191,8 @@ const mineTime = document.getElementById('mineTime');
 
 // ==== ФУНКЦИИ ====
 function updateBalance() {
-  balanceEl.innerHTML = Math.floor(balance);
-  diamondsEl.innerHTML = Math.floor(diamonds);
+  balanceEl.textContent = Math.floor(balance);
+  diamondsEl.textContent = Math.floor(diamonds);
   statOpenedEl.textContent = totalOpened;
   statSpentDiamondsEl.textContent = totalSpentDiamonds;
   statSpentCoinsEl.textContent = totalSpentCoins;
@@ -276,11 +272,11 @@ function renderInventory() {
     let sellButtons = '';
     if (prize.sellPriceDiamonds > 0) {
       sellButtons = `
-        <button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} ${ICON_COIN})</button>
-        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:8px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} ${ICON_DIAMOND})</button>
+        <button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} ⚜️)</button>
+        <button class="sell-btn" data-name="${prize.name}" data-currency="diamonds" style="margin-top:8px; background:#4fc3f7; color:#000;">Продать (${prize.sellPriceDiamonds} ♾️)</button>
       `;
     } else {
-      sellButtons = `<button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} ${ICON_COIN})</button>`;
+      sellButtons = `<button class="sell-btn" data-name="${prize.name}" data-currency="coins">Продать (${prize.sellPriceCoins} ⚜️)</button>`;
     }
     card.innerHTML = `
       ${icon}
@@ -328,7 +324,7 @@ function renderLeaders() {
     if (i === 0) row.classList.add('top-1');
     if (i === 1) row.classList.add('top-2');
     if (i === 2) row.classList.add('top-3');
-    row.innerHTML = `<span class="place">${i + 1}.</span><span class="name">${p.nick}</span><span class="value">${Math.floor(p.balance)} ${ICON_COIN}</span>`;
+    row.innerHTML = `<span class="place">${i + 1}.</span><span class="name">${p.nick}</span><span class="value">${Math.floor(p.balance)} ⚜️</span>`;
     leadersCoinsEl.appendChild(row);
   });
   const sortedDiamonds = [...players].sort((a, b) => b.diamonds - a.diamonds).slice(0, 5);
@@ -339,14 +335,14 @@ function renderLeaders() {
     if (i === 0) row.classList.add('top-1');
     if (i === 1) row.classList.add('top-2');
     if (i === 2) row.classList.add('top-3');
-    row.innerHTML = `<span class="place">${i + 1}.</span><span class="name">${p.nick}</span><span class="value">${Math.floor(p.diamonds)} ${ICON_DIAMOND}</span>`;
+    row.innerHTML = `<span class="place">${i + 1}.</span><span class="name">${p.nick}</span><span class="value">${Math.floor(p.diamonds)} ♾️</span>`;
     leadersDiamondsEl.appendChild(row);
   });
 }
 
 function showIncomePopup(amount, currency) {
   const popup = document.createElement('div');
-  popup.innerHTML = `+${amount} ${currency === '🪙' ? ICON_COIN : currency === '💎' ? ICON_DIAMOND : currency}`;
+  popup.textContent = `+${amount} ${currency}`;
   popup.style.cssText = `position:fixed;top:150px;right:25px;background:#000;border:3px solid #ffd700;border-radius:12px;padding:10px 20px;color:#ffd700;font-weight:bold;font-size:22px;z-index:300;box-shadow:0 0 25px #ffd70088;transition:opacity 1s,transform 1s;opacity:1;`;
   document.body.appendChild(popup);
   setTimeout(() => { popup.style.opacity = '0'; popup.style.transform = 'translateY(-30px)'; }, 2000);
@@ -365,8 +361,8 @@ function startIncome() {
       if (item.passiveIncomeCoins > 0) incomeCoins += item.passiveIncomeCoins * item.count;
       if (item.passiveIncomeDiamonds > 0) incomeDiamonds += item.passiveIncomeDiamonds * item.count;
     });
-    if (incomeCoins > 0) { balance += incomeCoins; showIncomePopup(incomeCoins, '🪙'); }
-    if (incomeDiamonds > 0) { diamonds += incomeDiamonds; showIncomePopup(incomeDiamonds, '💎'); }
+    if (incomeCoins > 0) { balance += incomeCoins; showIncomePopup(incomeCoins, '⚜️'); }
+    if (incomeDiamonds > 0) { diamonds += incomeDiamonds; showIncomePopup(incomeDiamonds, '♾️'); }
     if (incomeCoins > 0 || incomeDiamonds > 0) { updateBalance(); saveAccount(); renderLeaders(); }
   }, 60 * 1000);
 }
@@ -634,7 +630,7 @@ function startUpgrade() {
   items.forEach(type => {
     const div = document.createElement('div');
     div.className = 'upgrader-wheel-item';
-    if (type === 'win') { div.style.color = '#4fc3f7'; div.innerHTML = `<div class="emoji">💎</div><div>УСПЕХ</div>`; }
+    if (type === 'win') { div.style.color = '#4fc3f7'; div.innerHTML = `<div class="emoji">♾️</div><div>УСПЕХ</div>`; }
     else { div.style.color = '#f44336'; div.innerHTML = `<div class="emoji">💔</div><div>ПРОВАЛ</div>`; }
     upgraderTrack.appendChild(div);
   });
@@ -732,7 +728,7 @@ function renderMine() {
     if (available > 0) row.classList.add('available');
     row.innerHTML = `
       <span class="mine-time-label">+1 час</span>
-      <span class="mine-reward">+500 ${ICON_COIN} (доступно: ${available})</span>
+      <span class="mine-reward">+500 ⚜️ (доступно: ${available})</span>
       <button class="mine-claim-btn" data-hourly="1" ${available <= 0 ? 'disabled' : ''}>${available > 0 ? 'Забрать' : '—'}</button>
     `;
     mineList.appendChild(row);
@@ -752,8 +748,8 @@ function claimMineReward(idx) {
   mineClaimed.push(idx);
   if (reward.type === 'itemsCase') closeMineAndOpenCase('items');
   else if (reward.type === 'rankCase') closeMineAndOpenCase('privileges');
-  else if (reward.type === 'coins') { balance += reward.value; showIncomePopup(reward.value, '🪙'); updateBalance(); }
-  else if (reward.type === 'diamonds') { diamonds += reward.value; showIncomePopup(reward.value, '💎'); updateBalance(); }
+  else if (reward.type === 'coins') { balance += reward.value; showIncomePopup(reward.value, '⚜️'); updateBalance(); }
+  else if (reward.type === 'diamonds') { diamonds += reward.value; showIncomePopup(reward.value, '♾️'); updateBalance(); }
   else if (reward.type === 'arcanCase') closeMineAndOpenCase('arcanas');
   saveAccount();
   renderMine();
@@ -766,7 +762,7 @@ function claimHourly() {
   if (available <= 0) return;
   mineLastHourlyClaimed += 1;
   balance += MINE_HOURLY_REWARD;
-  showIncomePopup(MINE_HOURLY_REWARD, '🪙');
+  showIncomePopup(MINE_HOURLY_REWARD, '⚜️');
   updateBalance();
   saveAccount();
   renderMine();

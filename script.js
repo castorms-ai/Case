@@ -105,10 +105,6 @@ const ARCANAS = [
   { name: 'Fiery Soul of the Slayer', hero: 'Lina', chance: 1.225, color: '#f44336', emoji: '🔥', type: 'arcana', points: 700, sellPriceCoins: 1500, sellPriceDiamonds: 750, passiveIncomeCoins: 150, passiveIncomeDiamonds: 0 },
   { name: 'Demon Eater', hero: 'Shadow Fiend', chance: 0.1, color: '#ff9800', emoji: '😈', type: 'arcana', points: 1500, sellPriceCoins: 5000, sellPriceDiamonds: 2500, passiveIncomeCoins: 500, passiveIncomeDiamonds: 0 },
 ];
-
-// ==== XP ====
-let xp = 0;
-let rankIndex = 0;
 const ALL_ITEMS = [...PRIVILEGES, ...ITEMS, ...ARCANAS];
 const RARITY_ORDER = ['Рекрут', 'Страж', 'Рыцарь', 'Герой', 'Легенда', 'Властелин', 'Божество', 'Титан'];
 
@@ -145,6 +141,8 @@ let mineTickHandle = null;
 let giftSelectedType = 'item';
 let giftSelectedItem = null;
 let giftPendingTrade = null;
+let xp = 0;
+let rankIndex = 0;
 
 // ==== ЭЛЕМЕНТЫ ====
 const trackEl = document.getElementById('rouletteTrack');
@@ -215,7 +213,7 @@ const giftPreview = document.getElementById('giftPreview');
 const giftAcceptBtn = document.getElementById('giftAcceptBtn');
 const giftDeclineBtn = document.getElementById('giftDeclineBtn');
 
-// ==== XP ====
+// ==== XP ФУНКЦИИ ====
 function updateXPBar() {
   const fill = document.getElementById('xpBarFill');
   const text = document.getElementById('xpBarText');
@@ -265,7 +263,7 @@ function showRankUpPopup(name, img) {
   }, 3000);
 }
 
-// ==== ФУНКЦИИ ====
+// ==== ОБЩИЕ ФУНКЦИИ ====
 function updateBalance() {
   balanceEl.textContent = Math.floor(balance);
   diamondsEl.textContent = Math.floor(diamonds);
@@ -495,7 +493,7 @@ function loadAccount(nick, password) {
     mineDate = todayStr(); mineSecondsToday = 0; mineClaimed = []; mineLastHourlyClaimed = 0;
   }
   return 'ok';
-    }
+}
 let currentPrizeList = PRIVILEGES;
 let currentCaseType = 'privileges';
 

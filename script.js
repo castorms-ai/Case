@@ -8,33 +8,18 @@ const START_DIAMONDS = 100;
 const ITEM_WIDTH = 150;
 const SPIN_DURATION = 15000;
 const EXTRA_ITEMS = 50;
+const GIFT_SECRET = 'dota-cases-gift-secret-2026';
 
 // ==== РАНГИ DOTA 2 ====
 const PRIVILEGES = [
-  { name: 'Рекрут', chance: 40, color: '#8B7355', emoji: '🛡️', type: 'privilege',
-    points: 2, onlineIncome: 10, onlineDiamondIncome: 5,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank1_192.webp' },
-  { name: 'Страж', chance: 25, color: '#4caf50', emoji: '🟢', type: 'privilege',
-    points: 5, onlineIncome: 15, onlineDiamondIncome: 5,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank2_192.webp' },
-  { name: 'Рыцарь', chance: 15, color: '#2196f3', emoji: '🔵', type: 'privilege',
-    points: 10, onlineIncome: 20, onlineDiamondIncome: 5,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank3_192.webp' },
-  { name: 'Герой', chance: 10, color: '#00bcd4', emoji: '🌀', type: 'privilege',
-    points: 20, onlineIncome: 30, onlineDiamondIncome: 5,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank4_192.webp' },
-  { name: 'Легенда', chance: 5, color: '#9c27b0', emoji: '🟣', type: 'privilege',
-    points: 40, onlineIncome: 50, onlineDiamondIncome: 5,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank5_192.webp' },
-  { name: 'Властелин', chance: 3, color: '#f44336', emoji: '🔴', type: 'privilege',
-    points: 75, onlineIncome: 70, onlineDiamondIncome: 5,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank6_192.webp' },
-  { name: 'Божество', chance: 1.5, color: '#ffd700', emoji: '👑', type: 'privilege',
-    points: 120, onlineIncome: 90, onlineDiamondIncome: 10,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank7_192.webp' },
-  { name: 'Титан', chance: 0.5, color: '#ff5722', emoji: '🔥', type: 'privilege',
-    points: 200, onlineIncome: 120, onlineDiamondIncome: 15,
-    img: 'https://ru.dota2changer.com/assets/img/rank/rank8d_192.webp' },
+  { name: 'Рекрут', chance: 40, color: '#8B7355', emoji: '🛡️', type: 'privilege', points: 2, onlineIncome: 10, onlineDiamondIncome: 5, img: 'https://ru.dota2changer.com/assets/img/rank/rank1_192.webp' },
+  { name: 'Страж', chance: 25, color: '#4caf50', emoji: '🟢', type: 'privilege', points: 5, onlineIncome: 15, onlineDiamondIncome: 5, img: 'https://ru.dota2changer.com/assets/img/rank/rank2_192.webp' },
+  { name: 'Рыцарь', chance: 15, color: '#2196f3', emoji: '🔵', type: 'privilege', points: 10, onlineIncome: 20, onlineDiamondIncome: 5, img: 'https://ru.dota2changer.com/assets/img/rank/rank3_192.webp' },
+  { name: 'Герой', chance: 10, color: '#00bcd4', emoji: '🌀', type: 'privilege', points: 20, onlineIncome: 30, onlineDiamondIncome: 5, img: 'https://ru.dota2changer.com/assets/img/rank/rank4_192.webp' },
+  { name: 'Легенда', chance: 5, color: '#9c27b0', emoji: '🟣', type: 'privilege', points: 40, onlineIncome: 50, onlineDiamondIncome: 5, img: 'https://ru.dota2changer.com/assets/img/rank/rank5_192.webp' },
+  { name: 'Властелин', chance: 3, color: '#f44336', emoji: '🔴', type: 'privilege', points: 75, onlineIncome: 70, onlineDiamondIncome: 5, img: 'https://ru.dota2changer.com/assets/img/rank/rank6_192.webp' },
+  { name: 'Божество', chance: 1.5, color: '#ffd700', emoji: '👑', type: 'privilege', points: 120, onlineIncome: 90, onlineDiamondIncome: 10, img: 'https://ru.dota2changer.com/assets/img/rank/rank7_192.webp' },
+  { name: 'Титан', chance: 0.5, color: '#ff5722', emoji: '🔥', type: 'privilege', points: 200, onlineIncome: 120, onlineDiamondIncome: 15, img: 'https://ru.dota2changer.com/assets/img/rank/rank8d_192.webp' },
 ];
 
 // ==== ПРЕДМЕТЫ DOTA 2 ====
@@ -87,7 +72,7 @@ const ITEMS = [
   { name: 'Aghanim\'s Blessing', chance: 0.1666, color: '#f44336', emoji: '🔮', type: 'item', points: 50, sellPriceCoins: 250, sellPriceDiamonds: 50, passiveIncomeCoins: 0, passiveIncomeDiamonds: 2, img: 'https://dota2.ru/img/items/aghanims_blessing_rosan.webp?1732972302' },
 ];
 
-// ==== АРКАНЫ DOTA 2 (с героями) ====
+// ==== АРКАНЫ DOTA 2 ====
 const ARCANAS = [
   { name: 'Flockheart\'s Gamble', hero: 'Ogre Magi', chance: 11.25, color: '#ffffff', emoji: '🎲', type: 'arcana', points: 100, sellPriceCoins: 500, sellPriceDiamonds: 250, passiveIncomeCoins: 50, passiveIncomeDiamonds: 0 },
   { name: 'The One True King', hero: 'Wraith King', chance: 11.25, color: '#ffffff', emoji: '👑', type: 'arcana', points: 100, sellPriceCoins: 500, sellPriceDiamonds: 250, passiveIncomeCoins: 50, passiveIncomeDiamonds: 0 },
@@ -142,6 +127,11 @@ let mineLastHourlyClaimed = 0;
 let mineDate = '';
 let mineTickHandle = null;
 
+// Подарок
+let giftSelectedType = 'item';
+let giftSelectedItem = null;
+let giftPendingTrade = null;
+
 // ==== ЭЛЕМЕНТЫ ====
 const trackEl = document.getElementById('rouletteTrack');
 const wrapEl = document.getElementById('rouletteWrap');
@@ -188,6 +178,30 @@ const mineOverlay = document.getElementById('mineOverlay');
 const mineCloseBtn = document.getElementById('mineCloseBtn');
 const mineList = document.getElementById('mineList');
 const mineTime = document.getElementById('mineTime');
+
+// Подарок — элементы
+const giftOverlay = document.getElementById('giftOverlay');
+const giftCloseBtn = document.getElementById('giftCloseBtn');
+const giftTabs = document.querySelectorAll('.gift-tab');
+const giftSendSection = document.getElementById('gift-send');
+const giftReceiveSection = document.getElementById('gift-receive');
+const giftNick = document.getElementById('giftNick');
+const giftTypes = document.querySelectorAll('.gift-type');
+const giftItemList = document.getElementById('giftItemList');
+const giftAmountWrap = document.getElementById('giftAmountWrap');
+const giftAmount = document.getElementById('giftAmount');
+const giftSendError = document.getElementById('giftSendError');
+const giftCreateBtn = document.getElementById('giftCreateBtn');
+const giftCodeWrap = document.getElementById('giftCodeWrap');
+const giftCode = document.getElementById('giftCode');
+const giftCopyBtn = document.getElementById('giftCopyBtn');
+const giftCodeInput = document.getElementById('giftCodeInput');
+const giftReceiveError = document.getElementById('giftReceiveError');
+const giftReceiveBtn = document.getElementById('giftReceiveBtn');
+const giftPreviewWrap = document.getElementById('giftPreviewWrap');
+const giftPreview = document.getElementById('giftPreview');
+const giftAcceptBtn = document.getElementById('giftAcceptBtn');
+const giftDeclineBtn = document.getElementById('giftDeclineBtn');
 
 // ==== ФУНКЦИИ ====
 function updateBalance() {
@@ -701,6 +715,246 @@ upgraderOverlay.addEventListener('click', (e) => {
   if (e.target === upgraderOverlay && !upgraderSpinning) closeUpgrader();
 });
 
+// ==== ПОДАРОК ====
+function giftHash(str) {
+  let hash = 0;
+  const full = str + GIFT_SECRET;
+  for (let i = 0; i < full.length; i++) {
+    hash = ((hash << 5) - hash) + full.charCodeAt(i);
+    hash = hash | 0;
+  }
+  return Math.abs(hash).toString(16).toUpperCase();
+}
+
+function openGift() {
+  giftOverlay.classList.add('active');
+  giftNick.value = '';
+  giftSelectedItem = null;
+  giftSelectedType = 'item';
+  giftAmount.value = '';
+  giftSendError.textContent = '';
+  giftCodeWrap.style.display = 'none';
+  giftCodeInput.value = '';
+  giftReceiveError.textContent = '';
+  giftPreviewWrap.style.display = 'none';
+  giftPendingTrade = null;
+
+  giftTypes.forEach(t => t.classList.remove('active'));
+  document.querySelector('.gift-type[data-type="item"]').classList.add('active');
+
+  renderGiftItemList();
+  giftAmountWrap.style.display = 'none';
+}
+
+function closeGift() {
+  giftOverlay.classList.remove('active');
+}
+
+function switchGiftTab(tab) {
+  giftTabs.forEach(t => t.classList.remove('active'));
+  document.querySelector(`.gift-tab[data-gift-tab="${tab}"]`).classList.add('active');
+  if (tab === 'send') {
+    giftSendSection.classList.add('active');
+    giftReceiveSection.classList.remove('active');
+  } else {
+    giftReceiveSection.classList.add('active');
+    giftSendSection.classList.remove('active');
+  }
+}
+
+function renderGiftItemList() {
+  giftItemList.innerHTML = '';
+  if (giftSelectedType === 'coins' || giftSelectedType === 'diamonds') {
+    giftAmountWrap.style.display = 'block';
+    giftItemList.style.display = 'none';
+    return;
+  }
+  giftAmountWrap.style.display = 'none';
+  giftItemList.style.display = 'block';
+
+  let list = [];
+  if (giftSelectedType === 'item') {
+    list = itemInventory.map(p => ({ ...p, type: 'item' }));
+  } else if (giftSelectedType === 'privilege') {
+    list = privilegeInventory.map(p => ({ ...p, type: 'privilege' }));
+  }
+
+  if (list.length === 0) {
+    giftItemList.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Пусто</div>';
+    return;
+  }
+
+  list.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'gift-item';
+    if (giftSelectedItem && giftSelectedItem.name === item.name) div.classList.add('selected');
+    let icon = item.img ? `<img src="${item.img}" alt="${item.name}">` : `<div class="emoji">${item.emoji}</div>`;
+    div.innerHTML = `
+      ${icon}
+      <div class="item-name" style="color:${item.color}">${item.name}</div>
+      <div class="item-count">${item.count > 1 ? 'x' + item.count : ''}</div>
+    `;
+    div.addEventListener('click', () => {
+      giftSelectedItem = item;
+      renderGiftItemList();
+    });
+    giftItemList.appendChild(div);
+  });
+}
+
+giftTypes.forEach(typeBtn => {
+  typeBtn.addEventListener('click', () => {
+    giftTypes.forEach(t => t.classList.remove('active'));
+    typeBtn.classList.add('active');
+    giftSelectedType = typeBtn.dataset.type;
+    giftSelectedItem = null;
+    renderGiftItemList();
+  });
+});
+
+giftCreateBtn.addEventListener('click', () => {
+  giftSendError.textContent = '';
+  const nick = giftNick.value.trim();
+  if (!nick) { giftSendError.textContent = 'Введи ник!'; return; }
+  if (nick === playerNick) { giftSendError.textContent = 'Нельзя дарить себе!'; return; }
+
+  let itemName = '';
+  let amount = 0;
+
+  if (giftSelectedType === 'item' || giftSelectedType === 'privilege') {
+    if (!giftSelectedItem) { giftSendError.textContent = 'Выбери предмет!'; return; }
+    itemName = giftSelectedItem.name;
+  } else {
+    amount = parseInt(giftAmount.value);
+    if (!amount || amount <= 0) { giftSendError.textContent = 'Введи сумму!'; return; }
+    if (giftSelectedType === 'coins' && amount > balance) { giftSendError.textContent = 'Недостаточно монет!'; return; }
+    if (giftSelectedType === 'diamonds' && amount > diamonds) { giftSendError.textContent = 'Недостаточно алмазов!'; return; }
+  }
+
+  const ts = Math.floor(Date.now() / 1000);
+  const payload = `${playerNick}|${nick}|${giftSelectedType}|${itemName || amount}|${ts}`;
+  const hash = giftHash(payload);
+  const code = `GIFT|${payload}|${hash}`;
+
+  if (giftSelectedType === 'item') {
+    const found = itemInventory.find(p => p.name === itemName);
+    if (found) { found.count--; if (found.count <= 0) itemInventory = itemInventory.filter(p => p.name !== itemName); }
+  } else if (giftSelectedType === 'privilege') {
+    privilegeInventory = privilegeInventory.filter(p => p.name !== itemName);
+    recalcBestTitle();
+  } else if (giftSelectedType === 'coins') {
+    balance -= amount;
+  } else if (giftSelectedType === 'diamonds') {
+    diamonds -= amount;
+  }
+
+  updateBalance();
+  renderInventory();
+  saveAccount();
+
+  giftCode.value = code;
+  giftCodeWrap.style.display = 'block';
+});
+
+giftCopyBtn.addEventListener('click', () => {
+  giftCode.select();
+  document.execCommand('copy');
+  giftCopyBtn.textContent = '✅ Скопировано!';
+  setTimeout(() => { giftCopyBtn.textContent = '📋 Скопировать'; }, 1500);
+});
+
+giftReceiveBtn.addEventListener('click', () => {
+  giftReceiveError.textContent = '';
+  giftPreviewWrap.style.display = 'none';
+
+  const code = giftCodeInput.value.trim();
+  if (!code) { giftReceiveError.textContent = 'Вставь код!'; return; }
+
+  const parts = code.split('|');
+  if (parts.length !== 7 || parts[0] !== 'GIFT') {
+    giftReceiveError.textContent = 'Неверный код!';
+    return;
+  }
+
+  const [_, from, to, type, value, ts, hash] = parts;
+  const payload = `${from}|${to}|${type}|${value}|${ts}`;
+  const expectedHash = giftHash(payload);
+
+  if (hash !== expectedHash) {
+    giftReceiveError.textContent = 'Код подделан!';
+    return;
+  }
+
+  if (to !== playerNick) {
+    giftReceiveError.textContent = 'Подарок не для тебя!';
+    return;
+  }
+
+  const usedCodes = JSON.parse(localStorage.getItem('usedGiftCodes') || '[]');
+  if (usedCodes.includes(code)) {
+    giftReceiveError.textContent = 'Этот код уже использован!';
+    return;
+  }
+
+  giftPendingTrade = { code, from, to, type, value };
+
+  let previewText = '';
+  if (type === 'item') previewText = `📦 Предмет: <b>${value}</b>`;
+  else if (type === 'privilege') previewText = `🏆 Ранг: <b>${value}</b>`;
+  else if (type === 'coins') previewText = `⚜️ Монеты: <b>${value}</b>`;
+  else if (type === 'diamonds') previewText = `♾️ Алмазы: <b>${value}</b>`;
+
+  giftPreview.innerHTML = `
+    <div class="gift-from">🎁 Подарок от игрока "${from}"</div>
+    <div class="gift-what">${previewText}</div>
+  `;
+  giftPreviewWrap.style.display = 'block';
+});
+
+giftAcceptBtn.addEventListener('click', () => {
+  if (!giftPendingTrade) return;
+  const { code, type, value } = giftPendingTrade;
+
+  if (type === 'item') {
+    const found = ITEMS.find(i => i.name === value) || ARCANAS.find(i => i.name === value);
+    if (found) addItemToInventory(found);
+  } else if (type === 'privilege') {
+    const found = PRIVILEGES.find(p => p.name === value);
+    if (found) addPrivilegeToInventory(found);
+  } else if (type === 'coins') {
+    balance += parseInt(value);
+  } else if (type === 'diamonds') {
+    diamonds += parseInt(value);
+  }
+
+  const usedCodes = JSON.parse(localStorage.getItem('usedGiftCodes') || '[]');
+  usedCodes.push(code);
+  localStorage.setItem('usedGiftCodes', JSON.stringify(usedCodes));
+
+  updateBalance();
+  renderInventory();
+  recalcBestTitle();
+  saveAccount();
+
+  giftReceiveError.textContent = '';
+  giftPreviewWrap.style.display = 'none';
+  giftCodeInput.value = '';
+  giftPendingTrade = null;
+  alert('🎁 Подарок получен!');
+});
+
+giftDeclineBtn.addEventListener('click', () => {
+  giftPreviewWrap.style.display = 'none';
+  giftPendingTrade = null;
+});
+
+tradeBtn.addEventListener('click', openGift);
+giftCloseBtn.addEventListener('click', closeGift);
+giftOverlay.addEventListener('click', (e) => { if (e.target === giftOverlay) closeGift(); });
+giftTabs.forEach(tab => {
+  tab.addEventListener('click', () => switchGiftTab(tab.dataset.giftTab));
+});
+
 // ==== РУДНИК ====
 function renderMine() {
   const totalMinutes = Math.floor(mineSecondsToday / 60);
@@ -844,9 +1098,6 @@ nicknameBtn.addEventListener('click', () => {
 });
 
 checkInputs();
-
-// ==== ОБМЕН ====
-tradeBtn.addEventListener('click', () => alert('Обмен пока в разработке'));
 
 // ==== ВКЛАДКИ ====
 const hotbarBtns = document.querySelectorAll('.hotbar-btn');

@@ -525,3 +525,132 @@ function loadAccount(nick, password) {
   height: 30px;
   object-fit: contain;
 }
+// ==== ОБРАБОТЧИКИ КНОПОК ====
+
+// Кейсы
+openBtn.addEventListener('click', () => showOpenModal('privileges'));
+openItemsBtn.addEventListener('click', () => showOpenModal('items'));
+const openArcanaBtn = document.getElementById('openArcanaBtn');
+if (openArcanaBtn) openArcanaBtn.addEventListener('click', () => showOpenModal('arcanas'));
+
+// Оплата кейса предметов
+payDiamonds.addEventListener('click', () => {
+  if (diamonds < ITEMS_CASE_PRICE_DIAMONDS) { modalResult.textContent = 'Недостаточно алмазов!'; modalResult.style.color = '#f44336'; return; }
+  diamonds -= ITEMS_CASE_PRICE_DIAMONDS;
+  totalSpentDiamonds += ITEMS_CASE_PRICE_DIAMONDS;
+  startSpin('diamonds');
+});
+
+payCoins.addEventListener('click', () => {
+  if (balance < ITEMS_CASE_PRICE_COINS) { modalResult.textContent = 'Недостаточно монет!'; modalResult.style.color = '#f44336'; return; }
+  balance -= ITEMS_CASE_PRICE_COINS;
+  totalSpentCoins += ITEMS_CASE_PRICE_COINS;
+  startSpin('coins');
+});
+
+// Модалка кейсов
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+
+// Апгрейдер
+upgraderBtn.addEventListener('click', openUpgrader);
+upgraderCloseBtn.addEventListener('click', closeUpgrader);
+upgraderSpinBtn.addEventListener('click', startUpgrade);
+upgraderOverlay.addEventListener('click', (e) => {
+  if (e.target === upgraderOverlay && !upgraderSpinning) closeUpgrader();
+});
+
+// Подарок
+tradeBtn.addEventListener('click', openGift);
+giftCloseBtn.addEventListener('click', closeGift);
+giftOverlay.addEventListener('click', (e) => { if (e.target === giftOverlay) closeGift(); });
+giftTabs.forEach(tab => {
+  tab.addEventListener('click', () => switchGiftTab(tab.dataset.giftTab));
+});
+giftCopyBtn.addEventListener('click', () => {
+  giftCode.select();
+  document.execCommand('copy');
+  giftCopyBtn.textContent = '✅ Скопировано!';
+  setTimeout(() => { giftCopyBtn.textContent = '📋 Скопировать'; }, 1500);
+});
+giftAcceptBtn.addEventListener('click', () => {
+  if (!giftPendingTrade) return;
+  const { code, type, value } = giftPendingTrade;
+  if (type === 'item') {
+    const found = ITEMS.find(i => i.name === value) || ARCANAS.find(i => i.name === value);
+    if (found) addItemToInventory(found);
+  } else if (type === 'privilege') {
+    const found = PRIVILEGES.find(p => p.name === value);
+    if (found) addPrivilegeToInventory(found);
+  } else if (type === 'coins') {
+    balance += parseInt(value);
+  } else if (type === 'diamonds') {
+    diamonds += parseInt(value);
+  }
+  const usedCodes = JSON.parse(localStorage.getItem('usedGiftCodes') || '[]');
+  usedCodes.push(code);
+  localStorage.setItem('usedGiftCodes', JSON.stringify(usedCodes));
+  updateBalance();
+  renderInventory();
+  recalcBestTitle();
+  saveAccount();
+  giftReceiveError.textContent = '';
+  giftPreviewWrap.style.display = 'none';
+  giftCodeInput.value = '';
+  giftPendingTrade = null;
+  alert('🎁 Подарок получен!');
+});
+giftDeclineBtn.addEventListener('click', () => {
+  giftPreviewWrap.style.display = 'none';
+  giftPendingTrade = null;
+});
+
+// Рудник
+mineBtn.addEventListener('click', openMine);
+mineCloseBtn.addEventListener('click', closeMine);
+mineOverlay.addEventListener('click', (e) => { if (e.target === mineOverlay) closeMine(); });
+
+// Вкладки (Кейсы / Инвентарь / Профиль)
+const hotbarBtns = document.querySelectorAll('.hotbar-btn');
+const tabSections = document.querySelectorAll('.tab-section');
+hotbarBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    hotbarBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tabSections.forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+// Сортировка
+sortBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  sortMenu.classList.toggle('open');
+  sortBtn.classList.toggle('open');
+});
+sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const filter = item.dataset.filter;
+    sortMenu.querySelectorAll('.sort-menu-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    sortLabel.textContent = item.textContent;
+    currentFilter = filter;
+    renderInventory();
+    sortMenu.classList.remove('open');
+    sortBtn.classList.remove('open');
+  });
+});
+document.addEventListener('click', () => {
+  sortMenu.classList.remove('open');
+  sortBtn.classList.remove('open');
+});
+
+// Старт
+updateBalance();
+updateTitle();
+updateXPBar();
+renderInventory();
+renderLeaders();
+startIncome();

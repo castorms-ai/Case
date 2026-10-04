@@ -85,7 +85,7 @@
 <div class="tab-section" id="tab-profile">
   <h1 style="margin-top: 30px;">👤 ПРОФИЛЬ</h1>
   <div class="profile-stats">
-    Открыто кейсов <span id="statOpened">0</span> | Потрачено алмазов <span id="statSpentDiamonds">0</span> 💎 | Потрачено монет <span id="statSpentCoins">0</span> 🪙
+    Открыто кейсов <span id="statOpened">0</span> | Потрачено алмазов <span id="statSpentDiamonds">0</span> ♾️ | Потрачено монет <span id="statSpentCoins">0</span> ⚜️
   </div>
 
   <div class="leaders-wrap">
@@ -100,7 +100,7 @@
   </div>
 
   <button class="profile-trade-btn" id="mineBtn">⛏️ Рудник ⛏️</button>
-  <button class="profile-trade-btn" id="tradeBtn">🤝 Обмен 🤝</button>
+  <button class="profile-trade-btn" id="tradeBtn">🎁 Подарок 🎁</button>
   <button class="profile-trade-btn" id="upgraderBtn">⬆️ Апгрейдер ⬆️</button>
 </div>
 
@@ -156,6 +156,62 @@
     <div class="mine-time" id="mineTime">Сегодня: 0 мин</div>
     <div class="mine-list" id="mineList"></div>
     <button class="mine-close-btn" id="mineCloseBtn">Закрыть</button>
+  </div>
+</div>
+
+<div class="gift-overlay" id="giftOverlay">
+  <div class="gift-modal">
+    <div class="gift-title">🎁 ПОДАРОК 🎁</div>
+
+    <div class="gift-tabs">
+      <button class="gift-tab active" data-gift-tab="send">Отправить</button>
+      <button class="gift-tab" data-gift-tab="receive">Получить</button>
+    </div>
+
+    <div class="gift-section active" id="gift-send">
+      <div class="gift-label">Ник получателя:</div>
+      <input type="text" class="gift-input" id="giftNick" placeholder="Ник друга..." maxlength="20">
+
+      <div class="gift-label">Что дарим?</div>
+      <div class="gift-types">
+        <button class="gift-type active" data-type="item">Предмет</button>
+        <button class="gift-type" data-type="privilege">Ранг</button>
+        <button class="gift-type" data-type="coins">Монеты</button>
+        <button class="gift-type" data-type="diamonds">Алмазы</button>
+      </div>
+
+      <div id="giftItemList" class="gift-item-list"></div>
+
+      <div id="giftAmountWrap" style="display:none;">
+        <input type="number" class="gift-input" id="giftAmount" placeholder="Сколько?" min="1">
+      </div>
+
+      <div class="gift-error" id="giftSendError"></div>
+      <button class="gift-btn" id="giftCreateBtn">Создать код</button>
+
+      <div id="giftCodeWrap" style="display:none;">
+        <div class="gift-success">✅ Код создан! Отправь другу:</div>
+        <textarea class="gift-code" id="giftCode" readonly></textarea>
+        <button class="gift-copy-btn" id="giftCopyBtn">📋 Скопировать</button>
+      </div>
+    </div>
+
+    <div class="gift-section" id="gift-receive">
+      <div class="gift-label">Вставь код:</div>
+      <textarea class="gift-input gift-code-input" id="giftCodeInput" placeholder="GIFT|..."></textarea>
+      <div class="gift-error" id="giftReceiveError"></div>
+      <button class="gift-btn" id="giftReceiveBtn">Принять подарок</button>
+
+      <div id="giftPreviewWrap" style="display:none;">
+        <div class="gift-preview" id="giftPreview"></div>
+        <div class="gift-choice">
+          <button class="gift-btn gift-accept" id="giftAcceptBtn">✅ Принять</button>
+          <button class="gift-btn gift-decline" id="giftDeclineBtn">❌ Отклонить</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="gift-close-btn" id="giftCloseBtn">Закрыть</button>
   </div>
 </div>
 

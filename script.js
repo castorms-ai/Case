@@ -1327,3 +1327,157 @@ document.getElementById('adminResetAccount').addEventListener('click', () => {
   alert('Аккаунт сброшен! Перезагрузка...');
   location.reload();
 });
+// ==== ИВЕНТ ХЭЛЛОУИН ====
+let candies = 0;
+let isPlaying = false;
+let gameCooldown = false;
+let basketX = 50;
+let gameLoopId = null;
+let spawnedCount = 0;
+
+const eventBtn = document.getElementById('eventBtn');
+const eventOverlay = document.getElementById('eventOverlay');
+const eventCloseBtn = document.getElementById('eventCloseBtn');
+const eventPlayBtn = document.getElementById('eventPlayBtn');
+const eventCaseBtn = document.getElementById('eventCaseBtn');
+const gameArea = document.getElementById('gameArea');
+const basket = document.getElementById('basket');
+const gameTimer = document.getElementById('gameTimer');
+const gameStatus = document.getElementById('gameStatus');
+const candiesEl = document.getElementById('candies');
+
+function updateCandies() {
+  candiesEl.textContent = candies;
+  if (typeof saveAccount === 'function') saveAccount();
+}
+
+eventBtn.addEventListener('click', () => {
+  eventOverlay.classList.add('active');
+  updateCandies();
+});
+
+eventCloseBtn.addEventListener('click', () => {
+  eventOverlay.classList.remove('active');
+});
+
+eventPlayBtn.addEventListener('click', () => {
+  if (gameCooldown || isPlaying) return;
+  startGame();
+});
+
+function startGame() {
+  isPlaying = true;
+  spawnedCount = 0;
+  gameStatus.textContent = '';
+  eventPlayBtn.disabled = true;
+  gameTimer.textContent = '25';
+
+  basketX = 50;
+  basket.style.left = '50%';
+
+  const gameRect = gameArea.getBoundingClientRect();
+
+  function spawnCandy() {
+    if (!isPlaying) return;
+    if (spawnedCount >= 25) {
+      endGame();
+      return;
+    }
+    spawnedCount++;
+    gameTimer.textContent = 25 - spawnedCount;
+
+    const candy = document.createElement('div');
+    candy.className = 'falling-candy';
+    candy.textContent = '🍬';
+    const startX = Math.random() * (gameRect.width - 50);
+    candy.style.left = startX + 'px';
+    candy.style.top = '-50px';
+    gameArea.appendChild(candy);
+
+    let y = -50;
+    const speed = 3 + Math.random() * 2;
+
+    const fallInterval = setInterval(() => {
+      if (!isPlaying) {
+        clearInterval(fallInterval);
+        candy.remove();
+        return;
+      }
+      y += speed;
+      candy.style.top = y + 'px';
+
+      const candyRect = candy.getBoundingClientRect();
+      const basketRect = basket.getBoundingClientRect();
+
+      if (candyRect.bottom >= basketRect.top &&
+          candyRect.left + 20 >= basketRect.left &&
+          candyRect.left <= basketRect.right) {
+        clearInterval(fallInterval);
+        candy.remove();
+        candies++;
+        updateCandies();
+        gameStatus.textContent = '🍬 +1';
+        setTimeout(() => { gameStatus.textContent = ''; }, 300);
+        return;
+      }
+
+      if (y > gameRect.height) {
+        clearInterval(fallInterval);
+        candy.remove();
+      }
+    }, 30);
+  }
+
+  gameLoopId = setInterval(spawnCandy, 800);
+}
+
+function endGame() {
+  isPlaying = false;
+  clearInterval(gameLoopId);
+  gameStatus.textContent = 'Игра окончена! Собрано: ' + candies + ' 🍬';
+  gameTimer.textContent = '0';
+
+  gameCooldown = true;
+  eventPlayBtn.disabled = true;
+  let cd = 120;
+  const cdInterval = setInterval(() => {
+    cd--;
+    eventPlayBtn.textContent = `КД: ${cd} сек`;
+    if (cd <= 0) {
+      clearInterval(cdInterval);
+      gameCooldown = false;
+      eventPlayBtn.disabled = false;
+      eventPlayBtn.textContent = 'Играть';
+    }
+  }, 1000);
+}
+
+function moveBasket(clientX) {
+  const rect = gameArea.getBoundingClientRect();
+  let x = clientX - rect.left;
+  x = Math.max(40, Math.min(rect.width - 40, x));
+  basketX = x;
+  basket.style.left = x + 'px';
+  basket.style.transform = 'translateX(-50%)';
+}
+
+gameArea.addEventListener('mousemove', (e) => {
+  if (!isPlaying) return;
+  moveBasket(e.clientX);
+});
+
+gameArea.addEventListener('touchmove', (e) => {
+  if (!isPlaying) return;
+  e.preventDefault();
+  moveBasket(e.touches[0].clientX);
+}, { passive: false });
+
+eventCaseBtn.addEventListener('click', () => {
+  if (candies < 40) {
+    gameStatus.textContent = 'Недостаточно конфет! Нужно 40 🍬';
+    return;
+  }
+  candies -= 40;
+  updateCandies();
+  gameStatus.textContent = '🎃 Кейс открыт! (пока пусто)';
+});

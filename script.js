@@ -1171,3 +1171,150 @@ updateXPBar();
 renderInventory();
 renderLeaders();
 startIncome();
+// ==== АДМИНКА ====
+const ADMIN_PASS = 'zxc';
+
+const adminBtn = document.getElementById('adminBtn');
+const adminOverlay = document.getElementById('adminOverlay');
+const adminCloseBtn = document.getElementById('adminCloseBtn');
+const adminPass = document.getElementById('adminPass');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminError = document.getElementById('adminError');
+const adminPanel = document.getElementById('adminPanel');
+
+adminBtn.addEventListener('click', () => {
+  adminOverlay.classList.add('active');
+  adminPass.value = '';
+  adminError.textContent = '';
+  adminPanel.style.display = 'none';
+});
+
+adminCloseBtn.addEventListener('click', () => {
+  adminOverlay.classList.remove('active');
+});
+
+adminOverlay.addEventListener('click', (e) => {
+  if (e.target === adminOverlay) adminOverlay.classList.remove('active');
+});
+
+adminLoginBtn.addEventListener('click', () => {
+  if (adminPass.value === ADMIN_PASS) {
+    adminError.textContent = '';
+    adminPanel.style.display = 'block';
+    fillAdminLists();
+  } else {
+    adminError.textContent = 'Неверный пароль!';
+  }
+});
+
+function fillAdminLists() {
+  const itemSelect = document.getElementById('adminItemSelect');
+  const rankSelect = document.getElementById('adminRankSelect');
+  const xpRankSelect = document.getElementById('adminXPRankSelect');
+
+  itemSelect.innerHTML = '';
+  ITEMS.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.name;
+    opt.textContent = item.name;
+    itemSelect.appendChild(opt);
+  });
+  ARCANAS.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.name;
+    opt.textContent = item.name + ' (аркан)';
+    itemSelect.appendChild(opt);
+  });
+
+  rankSelect.innerHTML = '';
+  PRIVILEGES.forEach(rank => {
+    const opt = document.createElement('option');
+    opt.value = rank.name;
+    opt.textContent = rank.name;
+    rankSelect.appendChild(opt);
+  });
+
+  xpRankSelect.innerHTML = '';
+  XP_RANKS.forEach((rank, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = rank.name;
+    xpRankSelect.appendChild(opt);
+  });
+}
+
+document.getElementById('adminGiveCoins').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminCoins').value);
+  if (amount > 0) {
+    balance += amount;
+    updateBalance();
+    saveAccount();
+    alert(`Выдано ${amount} ⚜️`);
+  }
+});
+
+document.getElementById('adminGiveDiamonds').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminDiamonds').value);
+  if (amount > 0) {
+    diamonds += amount;
+    updateBalance();
+    saveAccount();
+    alert(`Выдано ${amount} ♾️`);
+  }
+});
+
+document.getElementById('adminGiveItem').addEventListener('click', () => {
+  const name = document.getElementById('adminItemSelect').value;
+  const item = ITEMS.find(i => i.name === name) || ARCANAS.find(i => i.name === name);
+  if (item) {
+    addItemToInventory(item);
+    renderInventory();
+    saveAccount();
+    alert(`Выдан: ${item.name}`);
+  }
+});
+
+document.getElementById('adminGiveRank').addEventListener('click', () => {
+  const name = document.getElementById('adminRankSelect').value;
+  const rank = PRIVILEGES.find(r => r.name === name);
+  if (rank) {
+    addPrivilegeToInventory(rank);
+    const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
+    const newIdx = RARITY_ORDER.indexOf(rank.name);
+    if (newIdx > currentIdx) { bestTitle = rank; updateTitle(); }
+    renderInventory();
+    saveAccount();
+    alert(`Выдан ранг: ${rank.name}`);
+  }
+});
+
+document.getElementById('adminSetXP').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminXP').value);
+  if (amount >= 0) {
+    xp = amount;
+    updateXPBar();
+    saveAccount();
+    alert(`XP установлен: ${amount}`);
+  }
+});
+
+document.getElementById('adminSetXPRank').addEventListener('click', () => {
+  const idx = parseInt(document.getElementById('adminXPRankSelect').value);
+  if (idx >= 0 && idx < XP_RANKS.length) {
+    rankIndex = idx;
+    xp = 0;
+    updateXPBar();
+    saveAccount();
+    alert(`XP-ранг: ${XP_RANKS[idx].name}`);
+  }
+});
+
+document.getElementById('adminResetAccount').addEventListener('click', () => {
+  if (!confirm('Точно сбросить аккаунт?')) return;
+  if (!playerNick) return;
+  const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+  delete accounts[playerNick];
+  localStorage.setItem('accounts', JSON.stringify(accounts));
+  alert('Аккаунт сброшен! Перезагрузка...');
+  location.reload();
+});

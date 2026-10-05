@@ -1,7 +1,7 @@
 // ==== ОДНОРАЗОВЫЙ СБРОС ====
 // Включи true, чтобы снести всё у ВСЕХ при следующем запуске.
 // После сброса — автоматически станет false.
-const WIPE_ON_NEXT_LAUNCH = true;
+const WIPE_ON_NEXT_LAUNCH = false;
 
 if (WIPE_ON_NEXT_LAUNCH) {
   localStorage.clear();

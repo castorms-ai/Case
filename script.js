@@ -1,3 +1,12 @@
+// ==== ОДНОРАЗОВЫЙ СБРОС ====
+// Включи true, чтобы снести всё у ВСЕХ при следующем запуске.
+// После сброса — автоматически станет false.
+const WIPE_ON_NEXT_LAUNCH = true;
+
+if (WIPE_ON_NEXT_LAUNCH) {
+  localStorage.clear();
+  console.log('WIPE: всё очищено');
+}
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;

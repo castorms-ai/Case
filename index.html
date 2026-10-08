@@ -8,6 +8,10 @@
 </head>
 <body>
 
+<button class="event-btn" id="eventBtn">
+  <img src="https://i.pinimg.com/originals/18/66/33/186633387e47cc46eb2cf053b86b1485.jpg" alt="event">
+</button>
+
 <div class="nickname-overlay" id="nicknameOverlay">
   <div class="nickname-modal">
     <div class="nickname-title">Прекрасная душа😈!</div>
@@ -19,10 +23,7 @@
   </div>
 </div>
 
-<button class="event-btn" id="eventBtn">
-  <img src="https://i.pinimg.com/originals/18/66/33/186633387e47cc46eb2cf053b86b1485.jpg" alt="event">
-</button>
-  <div class="top-bar">
+<div class="top-bar">
   <div class="player-box">
     <div class="player-top">
       <span class="avatar">👤</span>
@@ -44,7 +45,7 @@
 </div>
 
 <div class="tab-section active" id="tab-cases">
-  <h1>🎁 КЕЙСЫ [BETA1.0]</h1>
+  <h1>🎁 КЕЙСЫ</h1>
   <div class="cases-grid">
     <div class="case-card" id="startCase">
       <div class="case-name">КЕЙС РАНГОВ</div>
@@ -67,7 +68,7 @@
       <div class="case-chest">
         <img src="https://images.steamcdn.io/easydota/cases/ticket_int_2026.png" alt="arcana">
       </div>
-      <button class="open-btn" id="openArcanaBtn">Открыть (2500 ⚜️)</button>
+      <button class="open-btn" id="openArcanaBtn">Открыть (1000 ⚜️)</button>
     </div>
 
     <div class="case-card locked">
@@ -277,6 +278,12 @@
       </div>
 
       <div class="admin-section">
+        <div class="admin-label">Конфеты 🍬:</div>
+        <input type="number" class="admin-input" id="adminCandies" placeholder="Сколько?" min="0">
+        <button class="admin-btn" id="adminGiveCandies">Выдать 🍬</button>
+      </div>
+
+      <div class="admin-section">
         <button class="admin-btn admin-danger" id="adminResetAccount">🗑️ Сбросить аккаунт</button>
       </div>
 
@@ -285,6 +292,31 @@
   </div>
 </div>
 
+<div class="event-overlay" id="eventOverlay">
+  <div class="event-bg" style="background-image: url('halloween-bg.jpg');"></div>
+  <div class="event-content">
+    <div class="event-header">
+      <div class="event-title">🎃 ХЭЛЛОУИН 🎃</div>
+      <div class="event-candies">🍬 <span id="candies">0</span></div>
+    </div>
+
+    <div class="event-game-area" id="gameArea">
+      <div class="game-timer" id="gameTimer">25</div>
+      <div class="basket" id="basket">
+        <img src="https://icon2.cleanpng.com/lnd/20240513/gyw/awx5zaw91.webp" alt="basket">
+      </div>
+    </div>
+
+    <div class="event-game-status" id="gameStatus"></div>
+
+    <div class="event-bottom">
+      <button class="event-play-btn" id="eventPlayBtn">Играть</button>
+      <button class="event-case-btn" id="eventCaseBtn">Кейс Хэллоуина (40 🍬)</button>
+      <button class="event-close-btn" id="eventCloseBtn">Назад</button>
+    </div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 </body>
-</html>
+    </html>

@@ -1,23 +1,16 @@
-// ==== ОДНОРАЗОВЫЙ СБРОС ====
-// Включи true, чтобы снести всё у ВСЕХ при следующем запуске.
-// После сброса — автоматически станет false.
-const WIPE_ON_NEXT_LAUNCH = false;
-
-if (WIPE_ON_NEXT_LAUNCH) {
-  localStorage.clear();
-  console.log('WIPE: всё очищено');
-}
 // ==== НАСТРОЙКИ ====
 const PRIVILEGE_CASE_PRICE_DIAMONDS = 100;
 const ITEMS_CASE_PRICE_DIAMONDS = 50;
 const ITEMS_CASE_PRICE_COINS = 150;
-const ARCANA_CASE_PRICE_COINS = 2500;
+const ARCANA_CASE_PRICE_COINS = 1000;
 const START_BALANCE = 150;
 const START_DIAMONDS = 100;
 const ITEM_WIDTH = 150;
 const SPIN_DURATION = 15000;
 const EXTRA_ITEMS = 50;
 const GIFT_SECRET = 'dota-cases-gift-secret-2026';
+const ADMIN_PASS = 'zxc';
+const EVENT_CASE_PRICE = 40;
 
 // ==== РАНГИ (XP) ====
 const XP_RANKS = [
@@ -152,6 +145,7 @@ let giftSelectedItem = null;
 let giftPendingTrade = null;
 let xp = 0;
 let rankIndex = 0;
+let candies = 0;
 
 // ==== ЭЛЕМЕНТЫ ====
 const trackEl = document.getElementById('rouletteTrack');
@@ -474,7 +468,8 @@ function saveAccount() {
     totalOpened: totalOpened, totalSpentDiamonds: totalSpentDiamonds, totalSpentCoins: totalSpentCoins,
     mineSecondsToday: mineSecondsToday, mineClaimed: mineClaimed,
     mineLastHourlyClaimed: mineLastHourlyClaimed, mineDate: mineDate,
-    xp: xp, rankIndex: rankIndex
+    xp: xp, rankIndex: rankIndex,
+    candies: candies
   };
   localStorage.setItem('accounts', JSON.stringify(accounts));
   renderLeaders();
@@ -501,6 +496,7 @@ function loadAccount(nick, password) {
   totalSpentCoins = a.totalSpentCoins || 0;
   xp = a.xp ?? 0;
   rankIndex = a.rankIndex ?? 0;
+  candies = a.candies ?? 0;
   mineDate = a.mineDate || todayStr();
   mineSecondsToday = a.mineSecondsToday || 0;
   mineClaimed = a.mineClaimed || [];
@@ -509,7 +505,7 @@ function loadAccount(nick, password) {
     mineDate = todayStr(); mineSecondsToday = 0; mineClaimed = []; mineLastHourlyClaimed = 0;
   }
   return 'ok';
-                                            }
+  }
 let currentPrizeList = PRIVILEGES;
 let currentCaseType = 'privileges';
 
@@ -1087,251 +1083,9 @@ mineBtn.addEventListener('click', openMine);
 mineCloseBtn.addEventListener('click', closeMine);
 mineOverlay.addEventListener('click', (e) => { if (e.target === mineOverlay) closeMine(); });
 
-// ==== ВВОД НИКА И ПАРОЛЯ ====
-function checkInputs() {
-  if (!nicknameBtn || !nicknameInput || !passwordInput) return;
-  const ok = nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0;
-  nicknameBtn.disabled = !ok;
-}
-nicknameInput.addEventListener('input', checkInputs);
-nicknameInput.addEventListener('keyup', checkInputs);
-nicknameInput.addEventListener('change', checkInputs);
-passwordInput.addEventListener('input', checkInputs);
-passwordInput.addEventListener('keyup', checkInputs);
-passwordInput.addEventListener('change', checkInputs);
-nicknameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click(); });
-passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click(); });
-
-nicknameBtn.addEventListener('click', () => {
-  const nick = nicknameInput.value.trim();
-  const pass = passwordInput.value;
-  if (!nick || !pass) return;
-  const result = loadAccount(nick, pass);
-  if (result === 'wrongpass') { nicknameError.textContent = 'Неверный пароль!'; return; }
-  if (result === 'new') {
-    const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
-    accounts[nick] = {
-      password: pass, balance: START_BALANCE, diamonds: START_DIAMONDS,
-      privilegeInventory: [], itemInventory: [], bestTitle: null,
-      totalOpened: 0, totalSpentDiamonds: 0, totalSpentCoins: 0,
-      mineSecondsToday: 0, mineClaimed: [], mineLastHourlyClaimed: 0, mineDate: todayStr(),
-      xp: 0, rankIndex: 0
-    };
-    localStorage.setItem('accounts', JSON.stringify(accounts));
-  }
-  playerNick = nick;
-  playerNickEl.textContent = playerNick;
-  nicknameOverlay.classList.add('hidden');
-  nicknameError.textContent = '';
-  updateBalance();
-  updateTitle();
-  updateXPBar();
-  renderInventory();
-  renderLeaders();
-  startMineTick();
-});
-
-checkInputs();
-
-// ==== ВКЛАДКИ ====
-const hotbarBtns = document.querySelectorAll('.hotbar-btn');
-const tabSections = document.querySelectorAll('.tab-section');
-hotbarBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-    hotbarBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    tabSections.forEach(s => s.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-  });
-});
-
-// ==== СОРТИРОВКА ====
-sortBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  sortMenu.classList.toggle('open');
-  sortBtn.classList.toggle('open');
-});
-sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
-  item.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const filter = item.dataset.filter;
-    sortMenu.querySelectorAll('.sort-menu-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    sortLabel.textContent = item.textContent;
-    currentFilter = filter;
-    renderInventory();
-    sortMenu.classList.remove('open');
-    sortBtn.classList.remove('open');
-  });
-});
-document.addEventListener('click', () => {
-  sortMenu.classList.remove('open');
-  sortBtn.classList.remove('open');
-});
-
-modalClose.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
-
-// ==== СТАРТ ====
-updateBalance();
-updateTitle();
-updateXPBar();
-renderInventory();
-renderLeaders();
-startIncome();
-// ==== АДМИНКА ====
-const ADMIN_PASS = 'zxc';
-
-const adminBtn = document.getElementById('adminBtn');
-const adminOverlay = document.getElementById('adminOverlay');
-const adminCloseBtn = document.getElementById('adminCloseBtn');
-const adminPass = document.getElementById('adminPass');
-const adminLoginBtn = document.getElementById('adminLoginBtn');
-const adminError = document.getElementById('adminError');
-const adminPanel = document.getElementById('adminPanel');
-
-adminBtn.addEventListener('click', () => {
-  adminOverlay.classList.add('active');
-  adminPass.value = '';
-  adminError.textContent = '';
-  adminPanel.style.display = 'none';
-});
-
-adminCloseBtn.addEventListener('click', () => {
-  adminOverlay.classList.remove('active');
-});
-
-adminOverlay.addEventListener('click', (e) => {
-  if (e.target === adminOverlay) adminOverlay.classList.remove('active');
-});
-
-adminLoginBtn.addEventListener('click', () => {
-  if (adminPass.value === ADMIN_PASS) {
-    adminError.textContent = '';
-    adminPanel.style.display = 'block';
-    fillAdminLists();
-  } else {
-    adminError.textContent = 'Неверный пароль!';
-  }
-});
-
-function fillAdminLists() {
-  const itemSelect = document.getElementById('adminItemSelect');
-  const rankSelect = document.getElementById('adminRankSelect');
-  const xpRankSelect = document.getElementById('adminXPRankSelect');
-
-  itemSelect.innerHTML = '';
-  ITEMS.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item.name;
-    opt.textContent = item.name;
-    itemSelect.appendChild(opt);
-  });
-  ARCANAS.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item.name;
-    opt.textContent = item.name + ' (аркан)';
-    itemSelect.appendChild(opt);
-  });
-
-  rankSelect.innerHTML = '';
-  PRIVILEGES.forEach(rank => {
-    const opt = document.createElement('option');
-    opt.value = rank.name;
-    opt.textContent = rank.name;
-    rankSelect.appendChild(opt);
-  });
-
-  xpRankSelect.innerHTML = '';
-  XP_RANKS.forEach((rank, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = rank.name;
-    xpRankSelect.appendChild(opt);
-  });
-}
-
-document.getElementById('adminGiveCoins').addEventListener('click', () => {
-  const amount = parseInt(document.getElementById('adminCoins').value);
-  if (amount > 0) {
-    balance += amount;
-    updateBalance();
-    saveAccount();
-    alert(`Выдано ${amount} ⚜️`);
-  }
-});
-
-document.getElementById('adminGiveDiamonds').addEventListener('click', () => {
-  const amount = parseInt(document.getElementById('adminDiamonds').value);
-  if (amount > 0) {
-    diamonds += amount;
-    updateBalance();
-    saveAccount();
-    alert(`Выдано ${amount} ♾️`);
-  }
-});
-
-document.getElementById('adminGiveItem').addEventListener('click', () => {
-  const name = document.getElementById('adminItemSelect').value;
-  const item = ITEMS.find(i => i.name === name) || ARCANAS.find(i => i.name === name);
-  if (item) {
-    addItemToInventory(item);
-    renderInventory();
-    saveAccount();
-    alert(`Выдан: ${item.name}`);
-  }
-});
-
-document.getElementById('adminGiveRank').addEventListener('click', () => {
-  const name = document.getElementById('adminRankSelect').value;
-  const rank = PRIVILEGES.find(r => r.name === name);
-  if (rank) {
-    addPrivilegeToInventory(rank);
-    const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
-    const newIdx = RARITY_ORDER.indexOf(rank.name);
-    if (newIdx > currentIdx) { bestTitle = rank; updateTitle(); }
-    renderInventory();
-    saveAccount();
-    alert(`Выдан ранг: ${rank.name}`);
-  }
-});
-
-document.getElementById('adminSetXP').addEventListener('click', () => {
-  const amount = parseInt(document.getElementById('adminXP').value);
-  if (amount >= 0) {
-    xp = amount;
-    updateXPBar();
-    saveAccount();
-    alert(`XP установлен: ${amount}`);
-  }
-});
-
-document.getElementById('adminSetXPRank').addEventListener('click', () => {
-  const idx = parseInt(document.getElementById('adminXPRankSelect').value);
-  if (idx >= 0 && idx < XP_RANKS.length) {
-    rankIndex = idx;
-    xp = 0;
-    updateXPBar();
-    saveAccount();
-    alert(`XP-ранг: ${XP_RANKS[idx].name}`);
-  }
-});
-
-document.getElementById('adminResetAccount').addEventListener('click', () => {
-  if (!confirm('Точно сбросить аккаунт?')) return;
-  if (!playerNick) return;
-  const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
-  delete accounts[playerNick];
-  localStorage.setItem('accounts', JSON.stringify(accounts));
-  alert('Аккаунт сброшен! Перезагрузка...');
-  location.reload();
-});
 // ==== ИВЕНТ ХЭЛЛОУИН ====
-let candies = 0;
 let isPlaying = false;
 let gameCooldown = false;
-let basketX = 50;
 let gameLoopId = null;
 let spawnedCount = 0;
 
@@ -1348,7 +1102,7 @@ const candiesEl = document.getElementById('candies');
 
 function updateCandies() {
   candiesEl.textContent = candies;
-  if (typeof saveAccount === 'function') saveAccount();
+  saveAccount();
 }
 
 eventBtn.addEventListener('click', () => {
@@ -1372,7 +1126,6 @@ function startGame() {
   eventPlayBtn.disabled = true;
   gameTimer.textContent = '25';
 
-  basketX = 50;
   basket.style.left = '50%';
 
   const gameRect = gameArea.getBoundingClientRect();
@@ -1456,9 +1209,7 @@ function moveBasket(clientX) {
   const rect = gameArea.getBoundingClientRect();
   let x = clientX - rect.left;
   x = Math.max(40, Math.min(rect.width - 40, x));
-  basketX = x;
   basket.style.left = x + 'px';
-  basket.style.transform = 'translateX(-50%)';
 }
 
 gameArea.addEventListener('mousemove', (e) => {
@@ -1473,11 +1224,231 @@ gameArea.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 eventCaseBtn.addEventListener('click', () => {
-  if (candies < 40) {
-    gameStatus.textContent = 'Недостаточно конфет! Нужно 40 🍬';
+  if (candies < EVENT_CASE_PRICE) {
+    gameStatus.textContent = `Недостаточно конфет! Нужно ${EVENT_CASE_PRICE} 🍬`;
     return;
   }
-  candies -= 40;
+  candies -= EVENT_CASE_PRICE;
   updateCandies();
   gameStatus.textContent = '🎃 Кейс открыт! (пока пусто)';
 });
+
+// ==== ВВОД НИКА И ПАРОЛЯ ====
+function checkInputs() {
+  if (!nicknameBtn || !nicknameInput || !passwordInput) return;
+  const ok = nicknameInput.value.trim().length > 0 && passwordInput.value.length > 0;
+  nicknameBtn.disabled = !ok;
+}
+nicknameInput.addEventListener('input', checkInputs);
+nicknameInput.addEventListener('keyup', checkInputs);
+nicknameInput.addEventListener('change', checkInputs);
+passwordInput.addEventListener('input', checkInputs);
+passwordInput.addEventListener('keyup', checkInputs);
+passwordInput.addEventListener('change', checkInputs);
+nicknameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click(); });
+passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !nicknameBtn.disabled) nicknameBtn.click(); });
+
+nicknameBtn.addEventListener('click', () => {
+  const nick = nicknameInput.value.trim();
+  const pass = passwordInput.value;
+  if (!nick || !pass) return;
+  const result = loadAccount(nick, pass);
+  if (result === 'wrongpass') { nicknameError.textContent = 'Неверный пароль!'; return; }
+  if (result === 'new') {
+    const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+    accounts[nick] = {
+      password: pass, balance: START_BALANCE, diamonds: START_DIAMONDS,
+      privilegeInventory: [], itemInventory: [], bestTitle: null,
+      totalOpened: 0, totalSpentDiamonds: 0, totalSpentCoins: 0,
+      mineSecondsToday: 0, mineClaimed: [], mineLastHourlyClaimed: 0, mineDate: todayStr(),
+      xp: 0, rankIndex: 0, candies: 0
+    };
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+  }
+  playerNick = nick;
+  playerNickEl.textContent = playerNick;
+  nicknameOverlay.classList.add('hidden');
+  nicknameError.textContent = '';
+  updateBalance();
+  updateTitle();
+  updateXPBar();
+  updateCandies();
+  renderInventory();
+  renderLeaders();
+  startMineTick();
+});
+
+checkInputs();
+
+// ==== АДМИНКА ====
+const adminBtn = document.getElementById('adminBtn');
+const adminOverlay = document.getElementById('adminOverlay');
+const adminCloseBtn = document.getElementById('adminCloseBtn');
+const adminPass = document.getElementById('adminPass');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminError = document.getElementById('adminError');
+const adminPanel = document.getElementById('adminPanel');
+
+adminBtn.addEventListener('click', () => {
+  adminOverlay.classList.add('active');
+  adminPass.value = '';
+  adminError.textContent = '';
+  adminPanel.style.display = 'none';
+});
+
+adminCloseBtn.addEventListener('click', () => {
+  adminOverlay.classList.remove('active');
+});
+
+adminOverlay.addEventListener('click', (e) => {
+  if (e.target === adminOverlay) adminOverlay.classList.remove('active');
+});
+
+adminLoginBtn.addEventListener('click', () => {
+  if (adminPass.value === ADMIN_PASS) {
+    adminError.textContent = '';
+    adminPanel.style.display = 'block';
+    fillAdminLists();
+  } else {
+    adminError.textContent = 'Неверный пароль!';
+  }
+});
+
+function fillAdminLists() {
+  const itemSelect = document.getElementById('adminItemSelect');
+  const rankSelect = document.getElementById('adminRankSelect');
+  const xpRankSelect = document.getElementById('adminXPRankSelect');
+
+  itemSelect.innerHTML = '';
+  ITEMS.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.name;
+    opt.textContent = item.name;
+    itemSelect.appendChild(opt);
+  });
+  ARCANAS.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.name;
+    opt.textContent = item.name + ' (аркан)';
+    itemSelect.appendChild(opt);
+  });
+
+  rankSelect.innerHTML = '';
+  PRIVILEGES.forEach(rank => {
+    const opt = document.createElement('option');
+    opt.value = rank.name;
+    opt.textContent = rank.name;
+    rankSelect.appendChild(opt);
+  });
+
+  xpRankSelect.innerHTML = '';
+  XP_RANKS.forEach((rank, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = rank.name;
+    xpRankSelect.appendChild(opt);
+  });
+}
+
+document.getElementById('adminGiveCoins').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminCoins').value);
+  if (amount > 0) { balance += amount; updateBalance(); saveAccount(); alert(`Выдано ${amount} ⚜️`); }
+});
+
+document.getElementById('adminGiveDiamonds').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminDiamonds').value);
+  if (amount > 0) { diamonds += amount; updateBalance(); saveAccount(); alert(`Выдано ${amount} ♾️`); }
+});
+
+document.getElementById('adminGiveCandies').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminCandies').value);
+  if (amount > 0) { candies += amount; updateCandies(); alert(`Выдано ${amount} 🍬`); }
+});
+
+document.getElementById('adminGiveItem').addEventListener('click', () => {
+  const name = document.getElementById('adminItemSelect').value;
+  const item = ITEMS.find(i => i.name === name) || ARCANAS.find(i => i.name === name);
+  if (item) { addItemToInventory(item); renderInventory(); saveAccount(); alert(`Выдан: ${item.name}`); }
+});
+
+document.getElementById('adminGiveRank').addEventListener('click', () => {
+  const name = document.getElementById('adminRankSelect').value;
+  const rank = PRIVILEGES.find(r => r.name === name);
+  if (rank) {
+    addPrivilegeToInventory(rank);
+    const currentIdx = bestTitle ? RARITY_ORDER.indexOf(bestTitle.name) : -1;
+    const newIdx = RARITY_ORDER.indexOf(rank.name);
+    if (newIdx > currentIdx) { bestTitle = rank; updateTitle(); }
+    renderInventory(); saveAccount(); alert(`Выдан ранг: ${rank.name}`);
+  }
+});
+
+document.getElementById('adminSetXP').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('adminXP').value);
+  if (amount >= 0) { xp = amount; updateXPBar(); saveAccount(); alert(`XP установлен: ${amount}`); }
+});
+
+document.getElementById('adminSetXPRank').addEventListener('click', () => {
+  const idx = parseInt(document.getElementById('adminXPRankSelect').value);
+  if (idx >= 0 && idx < XP_RANKS.length) {
+    rankIndex = idx; xp = 0; updateXPBar(); saveAccount(); alert(`XP-ранг: ${XP_RANKS[idx].name}`);
+  }
+});
+
+document.getElementById('adminResetAccount').addEventListener('click', () => {
+  if (!confirm('Точно сбросить аккаунт?')) return;
+  if (!playerNick) return;
+  const accounts = JSON.parse(localStorage.getItem('accounts') || '{}');
+  delete accounts[playerNick];
+  localStorage.setItem('accounts', JSON.stringify(accounts));
+  alert('Аккаунт сброшен! Перезагрузка...');
+  location.reload();
+});
+
+// ==== ВКЛАДКИ ====
+const hotbarBtns = document.querySelectorAll('.hotbar-btn');
+const tabSections = document.querySelectorAll('.tab-section');
+hotbarBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    hotbarBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tabSections.forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+// ==== СОРТИРОВКА ====
+sortBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  sortMenu.classList.toggle('open');
+  sortBtn.classList.toggle('open');
+});
+sortMenu.querySelectorAll('.sort-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const filter = item.dataset.filter;
+    sortMenu.querySelectorAll('.sort-menu-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    sortLabel.textContent = item.textContent;
+    currentFilter = filter;
+    renderInventory();
+    sortMenu.classList.remove('open');
+    sortBtn.classList.remove('open');
+  });
+});
+document.addEventListener('click', () => {
+  sortMenu.classList.remove('open');
+  sortBtn.classList.remove('open');
+});
+
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+
+// ==== СТАРТ ====
+updateBalance();
+updateTitle();
+updateXPBar();
+renderInventory();
+renderLeaders();
+startIncome();
